@@ -2,7 +2,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { Heart, Menu, MessageCircle, Search, ShoppingCart, User, X } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { useShop } from '../store/shop'
-import { CATEGORIES, whatsappLink } from '../data/catalog'
+import { whatsappLink } from '../data/catalog'
 import { demoMode } from '../lib/supabase'
 
 export function Logo() {
@@ -10,7 +10,7 @@ export function Logo() {
 }
 
 export function Layout({ children }: { children: ReactNode }) {
-  const { cart, wishlist, user } = useShop()
+  const { cart, wishlist, user, categories } = useShop()
   const [open, setOpen] = useState(false)
   const [q, setQ] = useState('')
   const nav = useNavigate()
@@ -25,7 +25,7 @@ export function Layout({ children }: { children: ReactNode }) {
           <nav className="hidden lg:flex gap-5 ml-6 text-sm font-medium" aria-label="Main navigation">
             <NavLink to="/" className={({ isActive }) => isActive ? 'underline underline-offset-4' : ''}>Home</NavLink>
             <NavLink to="/shop" className={({ isActive }) => isActive ? 'underline underline-offset-4' : ''}>Shop All</NavLink>
-            {CATEGORIES.slice(0, 5).map(c => <NavLink key={c.id} to={`/shop?category=${c.id}`}>{c.name}</NavLink>)}
+            {categories.slice(0, 5).map(c => <NavLink key={c.id} to={`/shop?category=${c.id}`}>{c.name}</NavLink>)}
             <NavLink to="/about">About</NavLink>
             <NavLink to="/contact">Contact</NavLink>
           </nav>
@@ -39,13 +39,13 @@ export function Layout({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
-      {open && <div className="fixed inset-0 z-50 bg-white p-5 overflow-auto"><div className="flex justify-between"><Logo /><button aria-label="Close menu" onClick={() => setOpen(false)}><X /></button></div><nav className="grid gap-4 mt-8 text-lg" onClick={() => setOpen(false)}><Link to="/">Home</Link><Link to="/shop">Shop All</Link>{CATEGORIES.map(c => <Link key={c.id} to={`/shop?category=${c.id}`}>{c.name}</Link>)}<Link to="/about">About Us</Link><Link to="/contact">Contact Us</Link><Link to="/faq">FAQ</Link><Link to="/admin">Admin</Link></nav></div>}
+      {open && <div className="fixed inset-0 z-50 bg-white p-5 overflow-auto"><div className="flex justify-between"><Logo /><button aria-label="Close menu" onClick={() => setOpen(false)}><X /></button></div><nav className="grid gap-4 mt-8 text-lg" onClick={() => setOpen(false)}><Link to="/">Home</Link><Link to="/shop">Shop All</Link>{categories.map(c => <Link key={c.id} to={`/shop?category=${c.id}`}>{c.name}</Link>)}<Link to="/about">About Us</Link><Link to="/contact">Contact Us</Link><Link to="/faq">FAQ</Link><Link to="/admin">Admin</Link></nav></div>}
       {demoMode && <div className="bg-amber-50 border-b border-amber-200 text-amber-900 text-xs sm:text-sm text-center px-4 py-2">Demo mode: Supabase live connection is not configured yet (anon key still missing). Cart, checkout and admin below run on demo data in this browser. Prices are demo samples, not confirmed shop prices. <Link to="/admin" className="underline font-semibold">Admin setup →</Link></div>}
       <main>{children}</main>
       <footer className="bg-[#080808] text-white mt-16">
         <div className="max-w-7xl mx-auto px-4 py-12 grid gap-10 md:grid-cols-4">
           <div><Logo /><p className="text-neutral-400 text-sm mt-4">Upgrade Your Tech. Elevate Your Style.</p><p className="text-neutral-400 text-sm mt-2">WhatsApp: +92 3170851250</p><p className="text-neutral-400 text-sm">Currency: PKR • Market: Pakistan (primary)</p></div>
-          <nav aria-label="Shop"><h3 className="font-bold mb-3">Shop</h3><ul className="space-y-2 text-neutral-300 text-sm"><li><Link to="/shop">Shop All</Link></li>{CATEGORIES.slice(0, 6).map(c => <li key={c.id}><Link to={`/shop?category=${c.id}`}>{c.name}</Link></li>)}</ul></nav>
+          <nav aria-label="Shop"><h3 className="font-bold mb-3">Shop</h3><ul className="space-y-2 text-neutral-300 text-sm"><li><Link to="/shop">Shop All</Link></li>{categories.slice(0, 6).map(c => <li key={c.id}><Link to={`/shop?category=${c.id}`}>{c.name}</Link></li>)}</ul></nav>
           <nav aria-label="Help"><h3 className="font-bold mb-3">Help</h3><ul className="space-y-2 text-neutral-300 text-sm"><li><Link to="/faq">FAQ</Link></li><li><Link to="/shipping">Shipping Policy</Link></li><li><Link to="/returns">Return and Refund Policy</Link></li><li><Link to="/privacy">Privacy Policy</Link></li><li><Link to="/terms">Terms and Conditions</Link></li><li><Link to="/track">Order Tracking</Link></li></ul></nav>
           <div><h3 className="font-bold mb-3">Social (to be added by owner)</h3><p className="text-neutral-400 text-sm">Instagram, Facebook, TikTok and YouTube links are placeholders — the owner has no social links yet and none have been invented.</p><p className="text-neutral-400 text-sm mt-3">International delivery is not advertised as available until courier arrangements and rates are confirmed.</p></div>
         </div>

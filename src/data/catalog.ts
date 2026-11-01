@@ -4,6 +4,7 @@ export type Product = {
   price: number; compareAt?: number; stock: number; image: string;
   description: string; specs: string[]; colours: string[];
   featured?: boolean; bestseller?: boolean; trending?: boolean; isNew?: boolean;
+  isDemo?: boolean;
   seoTitle: string; seoDescription: string;
 }
 
@@ -30,8 +31,10 @@ export const CATEGORIES: Category[] = [
   { id: 'gadgets', name: 'Other Tech Gadgets', slug: 'other-tech-gadgets', description: 'Useful everyday tech.' },
 ]
 
-const p = (o: Omit<Product, 'image' | 'seoTitle' | 'seoDescription'> & { image: string }): Product => ({
+const p = (o: Omit<Product, 'image' | 'seoTitle' | 'seoDescription' | 'isDemo'> & { image: string }): Product => ({
   ...o,
+  // Every local catalogue product is a demo sample until the owner approves it.
+  isDemo: true,
   seoTitle: `${o.name} — UK Accessories`,
   seoDescription: `${o.name} in Pakistan. ${o.description} Demo product — price to be confirmed by the shop owner.`,
 })

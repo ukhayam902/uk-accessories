@@ -34,6 +34,9 @@ npm run build
    (https://cnkdeotxnaxlavvrmzyr.supabase.co) — do not create a new project.
 2. Open **SQL Editor** and run, in order:
    - `supabase/migrations/001_init.sql`
+   - `supabase/migrations/002_auth_role_read.sql` (required for live login:
+     lets a user read their own `user_roles` row and makes `is_admin()`
+     SECURITY DEFINER, otherwise the admin check always returns false)
    - `supabase/seed.sql`
 3. In **Storage**, create buckets: `product-images`, `category-images`,
    `banners` (public read) and `payment-screenshots` (private; admin-only read,

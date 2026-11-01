@@ -2,23 +2,23 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Heart, Minus, Plus, Search, ShieldCheck, ShoppingCart, Truck, RotateCcw, Zap } from 'lucide-react'
 import { useMemo, useState, type FormEvent } from 'react'
-import { CATEGORIES, PRODUCTS, categoryName, formatPKR, productBySlug, whatsappLink, type Product } from '../data/catalog'
-import { useShop } from '../store/shop'
+import { formatPKR, whatsappLink, type Product } from '../data/catalog'
+import { categoryNameFor, useShop } from '../store/shop'
 import { demoMode } from '../lib/supabase'
 
 export const DemoNote = () => <p className="text-xs bg-amber-50 border border-amber-200 text-amber-900 rounded px-3 py-2">Demo product — price and specifications are samples, not confirmed shop prices. Product image is a representative illustration.</p>
 
 export function ProductCard({ p }: { p: Product }) {
-  const { addToCart, toggleWishlist, wishlist } = useShop()
+  const { addToCart, toggleWishlist, wishlist, categories } = useShop()
   const wished = wishlist.some(x => x.id === p.id)
   return (
     <motion.article whileHover={{ y: -4 }} className="border rounded-2xl overflow-hidden bg-white flex flex-col">
       <Link to={`/product/${p.slug}`}><img src={p.image} alt={p.name} loading="lazy" className="w-full aspect-square object-cover bg-[#F7F7F7]" /></Link>
       <div className="p-4 flex flex-col gap-2 flex-1">
-        <p className="text-xs text-neutral-500">{categoryName(p.category)} • SKU {p.sku}</p>
+        <p className="text-xs text-neutral-500">{categoryNameFor(categories, p.category)} • SKU {p.sku}</p>
         <Link to={`/product/${p.slug}`} className="font-semibold leading-snug">{p.name}</Link>
         <p className="text-sm text-neutral-600 line-clamp-2">{p.description}</p>
-        <div className="flex gap-1 flex-wrap">{p.featured && <span className="text-[11px] bg-black text-white px-2 py-0.5 rounded-full">Featured</span>}{p.bestseller && <span className="text-[11px] bg-neutral-200 px-2 py-0.5 rounded-full">Bestseller</span>}{p.isNew && <span className="text-[11px] border px-2 py-0.5 rounded-full">New</span>}<span className="text-[11px] text-amber-700">Demo price</span></div>
+        <div className="flex gap-1 flex-wrap">{p.featured && <span className="text-[11px] bg-black text-white px-2 py-0.5 rounded-full">Featured</span>}{p.bestseller && <span className="text-[11px] bg-neutral-200 px-2 py-0.5 rounded-full">Bestseller</span>}{p.isNew && <span className="text-[11px] border px-2 py-0.5 rounded-full">New</span>}{p.isDemo && <span className="text-[11px] text-amber-700">Demo price</span>}</div>
         <div className="mt-auto flex items-center justify-between pt-2"><span className="font-bold text-lg">{formatPKR(p.price)}</span><span className="text-xs text-neutral-500">{p.stock > 0 ? `${p.stock} in stock` : 'Out of stock'}</span></div>
         <div className="flex gap-2"><button onClick={() => addToCart(p)} disabled={p.stock <= 0} className="flex-1 bg-black text-white rounded-full py-2 text-sm disabled:opacity-40">Add to Cart</button><button aria-label="Toggle wishlist" onClick={() => toggleWishlist(p)} className={`border rounded-full p-2 ${wished ? 'text-red-600' : ''}`}><Heart fill={wished ? 'currentColor' : 'none'} size={18} /></button></div>
       </div>
@@ -27,7 +27,7 @@ export function ProductCard({ p }: { p: Product }) {
 }
 
 export function Home() {
-  const { products } = useShop()
+  const { products, categories } = useShop()
   const [email, setEmail] = useState('')
   const featured = products.filter(p => p.featured)
   const best = products.filter(p => p.bestseller)
@@ -41,11 +41,11 @@ export function Home() {
           <h1 className="text-5xl sm:text-6xl font-extrabold leading-[1.02] mt-4">TECHNOLOGY<br />MEETS STYLE.</h1>
           <p className="text-lg text-neutral-600 mt-4">Discover premium accessories designed for your everyday life.</p>
           <div className="flex gap-3 mt-6"><Link to="/shop" className="bg-black text-white px-7 py-3 rounded-full font-semibold">Shop Now</Link><Link to="/about" className="border px-7 py-3 rounded-full font-semibold">Our Story</Link></div>
-          <DemoNote />
+          {featured.length > 0 && featured[0].isDemo && <DemoNote />}
         </motion.div>
         <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}><img src="/images/earbuds.svg" alt="Premium wireless earbuds — representative illustration" className="rounded-3xl w-full bg-[#F7F7F7]" /></motion.div>
       </section>
-      <section className="max-w-7xl mx-auto px-4"><h2 className="text-2xl font-bold mb-4">Featured Collections</h2><div className="grid grid-cols-2 md:grid-cols-4 gap-3">{CATEGORIES.map(c => <Link key={c.id} to={`/shop?category=${c.id}`} className="border rounded-2xl p-5 hover:bg-[#F7F7F7]"><span className="font-semibold block">{c.name}</span><span className="text-sm text-neutral-500">{c.description}</span></Link>)}</div></section>
+      <section className="max-w-7xl mx-auto px-4"><h2 className="text-2xl font-bold mb-4">Featured Collections</h2><div className="grid grid-cols-2 md:grid-cols-4 gap-3">{categories.map(c => <Link key={c.id} to={`/shop?category=${c.id}`} className="border rounded-2xl p-5 hover:bg-[#F7F7F7]"><span className="font-semibold block">{c.name}</span><span className="text-sm text-neutral-500">{c.description}</span></Link>)}</div></section>
       <Section title="Best-selling products" items={best} />
       <Section title="Trending products" items={trending} />
       <Section title="New arrivals" items={fresh} />
@@ -62,7 +62,7 @@ function Section({ title, items }: { title: string; items: Product[] }) {
 }
 
 export function ShopPage() {
-  const { products } = useShop()
+  const { products, categories } = useShop()
   const [params, setParams] = useSearchParams()
   const [search, setSearch] = useState(params.get('search') || '')
   const [cat, setCat] = useState(params.get('category') || 'all')
@@ -72,19 +72,19 @@ export function ShopPage() {
   const filtered = useMemo(() => {
     let list = [...products]
     if (cat !== 'all') list = list.filter(p => p.category === cat)
-    if (search) list = list.filter(p => (p.name + p.description + categoryName(p.category)).toLowerCase().includes(search.toLowerCase()))
+    if (search) list = list.filter(p => (p.name + p.description + categoryNameFor(categories, p.category)).toLowerCase().includes(search.toLowerCase()))
     list = list.filter(p => p.price <= maxPrice)
     if (sort === 'price-asc') list.sort((a, b) => a.price - b.price)
     if (sort === 'price-desc') list.sort((a, b) => b.price - a.price)
     if (sort === 'popular') list.sort((a, b) => Number(b.bestseller || false) - Number(a.bestseller || false))
     return list
-  }, [products, cat, search, maxPrice, sort])
+  }, [products, categories, cat, search, maxPrice, sort])
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold">Shop</h1><p className="text-neutral-600">All prices in PKR. Demo prices — to be confirmed by the owner.</p>
+      <h1 className="text-3xl font-bold">Shop</h1><p className="text-neutral-600">All prices in PKR.{products.some(p => p.isDemo) ? ' Demo prices — to be confirmed by the owner.' : ''}</p>
       <div className="flex flex-wrap gap-3 mt-5">
         <label className="flex items-center border rounded-full px-3 py-2 gap-2"><Search size={16} /><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…" className="outline-none text-sm" /></label>
-        <select value={cat} onChange={e => { setCat(e.target.value); setParams({ category: e.target.value }) }} className="border rounded-full px-3 py-2 text-sm" aria-label="Filter by category"><option value="all">All categories</option>{CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
+        <select value={cat} onChange={e => { setCat(e.target.value); setParams({ category: e.target.value }) }} className="border rounded-full px-3 py-2 text-sm" aria-label="Filter by category"><option value="all">All categories</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
         <select value={sort} onChange={e => setSort(e.target.value)} className="border rounded-full px-3 py-2 text-sm" aria-label="Sort products"><option value="popular">Sort: Popularity</option><option value="price-asc">Price: Low to High</option><option value="price-desc">Price: High to Low</option></select>
         <label className="flex items-center gap-2 text-sm border rounded-full px-3 py-2">Max price Rs. {maxPrice}<input type="range" min={300} max={5000} step={100} value={maxPrice} onChange={e => setMaxPrice(Number(e.target.value))} /></label>
       </div>
@@ -98,20 +98,21 @@ export function ShopPage() {
 }
 
 export function ProductPage() {
-  const { slug } = useParams(); const p = productBySlug(slug || '')
-  const { addToCart, toggleWishlist } = useShop(); const nav = useNavigate()
+  const { slug } = useParams()
+  const { addToCart, toggleWishlist, products, categories } = useShop(); const nav = useNavigate()
+  const p = products.find(x => x.slug === slug)
   const [qty, setQty] = useState(1); const [colour, setColour] = useState(p?.colours[0] || '')
   if (!p) return <div className="max-w-7xl mx-auto px-4 py-16">Product not found. <Link to="/shop" className="underline">Back to shop</Link></div>
-  const related = PRODUCTS.filter(x => x.category === p.category && x.id !== p.id).slice(0, 4)
+  const related = products.filter(x => x.category === p.category && x.id !== p.id).slice(0, 4)
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="grid md:grid-cols-2 gap-8">
         <img src={p.image} alt={p.name} className="rounded-3xl w-full bg-[#F7F7F7]" />
         <div>
-          <p className="text-sm text-neutral-500">{categoryName(p.category)} • SKU {p.sku}</p>
+          <p className="text-sm text-neutral-500">{categoryNameFor(categories, p.category)} • SKU {p.sku}</p>
           <h1 className="text-3xl font-bold mt-1">{p.name}</h1>
           <p className="text-2xl font-bold mt-3">{formatPKR(p.price)}</p>
-          <DemoNote />
+          {p.isDemo && <DemoNote />}
           <p className="text-neutral-700 mt-4">{p.description}</p>
           <h2 className="font-bold mt-5">Specifications</h2><ul className="list-disc ml-5 text-sm text-neutral-700">{p.specs.map(s => <li key={s}>{s}</li>)}</ul>
           <div className="mt-4"><span className="font-semibold text-sm">Colour: </span>{p.colours.map(c => <button key={c} onClick={() => setColour(c)} className={`border rounded-full px-3 py-1 text-sm mr-2 ${colour === c ? 'bg-black text-white' : ''}`}>{c}</button>)}</div>
@@ -171,23 +172,64 @@ function Field({ name, label, required, type = 'text', defaultValue }: { name: s
 }
 
 export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
-  const { login } = useShop(); const nav = useNavigate(); const [email, setEmail] = useState('')
-  return <div className="max-w-md mx-auto px-4 py-16"><h1 className="text-3xl font-bold">{mode === 'login' ? 'Customer Login' : 'Customer Registration'}</h1><p className="text-sm text-neutral-600 mt-2">Demo mode: any email signs you in locally in this browser. In live mode this uses Supabase Auth (see README). No public admin registration exists — admin is set up by SQL (see README).</p>
-    <form className="grid gap-4 mt-6" onSubmit={e => { e.preventDefault(); login(email); nav('/profile') }}>
-      {mode === 'register' && <input required placeholder="Full name" className="border rounded-xl px-3 py-2.5" />}
+  const { login, loginWithPassword, register, resetPassword } = useShop(); const nav = useNavigate()
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [info, setInfo] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [showReset, setShowReset] = useState(false)
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); setError(null); setInfo(null); setBusy(true)
+    try {
+      if (mode === 'login') {
+        const res = await loginWithPassword(email, password)
+        if (res.error) { setError(res.error); return }
+        nav(res.user?.isAdmin ? '/admin' : '/profile')
+      } else {
+        const res = await register(name, email, password)
+        if (res.error) { setError(res.error); return }
+        if (res.needsConfirmation) { setInfo('Account created. Please check your email to confirm it, then sign in.'); return }
+        nav('/profile')
+      }
+    } finally { setBusy(false) }
+  }
+  const doReset = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); setError(null); setInfo(null); setBusy(true)
+    try {
+      const res = await resetPassword(email)
+      if (res.error) setError(res.error)
+      else setInfo(demoMode ? 'Demo mode: password reset is not sent in this browser.' : 'Password reset link sent — check your email.')
+    } finally { setBusy(false) }
+  }
+  return <div className="max-w-md mx-auto px-4 py-16"><h1 className="text-3xl font-bold">{mode === 'login' ? 'Customer Login' : 'Customer Registration'}</h1>
+    <p className="text-sm text-neutral-600 mt-2">{demoMode
+      ? 'Demo mode: any email signs you in locally in this browser.'
+      : 'Sign in with your Supabase account. Admin access comes only from a user_roles row in Supabase — there is no public admin registration and no admin flag set from this page.'}</p>
+    {error && <p role="alert" className="text-sm bg-red-50 border border-red-200 text-red-800 rounded px-3 py-2 mt-4">{error}</p>}
+    {info && <p role="status" className="text-sm bg-green-50 border border-green-200 text-green-800 rounded px-3 py-2 mt-4">{info}</p>}
+    <form className="grid gap-4 mt-6" onSubmit={submit}>
+      {mode === 'register' && <input required placeholder="Full name" value={name} onChange={e => setName(e.target.value)} className="border rounded-xl px-3 py-2.5" />}
       <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" className="border rounded-xl px-3 py-2.5" />
-      <input required type="password" placeholder="Password" className="border rounded-xl px-3 py-2.5" />
-      <button className="bg-black text-white rounded-full py-3">{mode === 'login' ? 'Login' : 'Create account'}</button>
+      <input required type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" className="border rounded-xl px-3 py-2.5" />
+      <button disabled={busy} className="bg-black text-white rounded-full py-3 disabled:opacity-50">{busy ? 'Please wait…' : mode === 'login' ? 'Login' : 'Create account'}</button>
     </form>
-    <p className="text-sm mt-4">{mode === 'login' ? <>New here? <Link to="/register" className="underline">Register</Link></> : <>Already have an account? <Link to="/login" className="underline">Login</Link></>} • <Link to="/login" className="underline">Password reset</Link> (live Supabase reset link when configured)</p>
-    <button onClick={() => { login('admin@ukaccessories.demo', true); nav('/admin') }} className="mt-6 w-full border rounded-full py-2.5 text-sm">Demo: sign in as admin (demo only — not a real admin account)</button>
+    <p className="text-sm mt-4">{mode === 'login' ? <>New here? <Link to="/register" className="underline">Register</Link></> : <>Already have an account? <Link to="/login" className="underline">Login</Link></>} • <button onClick={() => setShowReset(s => !s)} className="underline">Password reset</button></p>
+    {showReset && <form className="grid gap-3 mt-4 border rounded-2xl p-4" onSubmit={doReset}>
+      <p className="text-sm text-neutral-600">{demoMode ? 'Demo mode: reset links are not sent.' : 'Enter your email and we will send a Supabase password reset link.'}</p>
+      <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" className="border rounded-xl px-3 py-2.5" />
+      <button disabled={busy} className="border rounded-full py-2.5 text-sm disabled:opacity-50">Send reset link</button>
+    </form>}
+    {demoMode && <button onClick={() => { login('admin@ukaccessories.demo', true); nav('/admin') }} className="mt-6 w-full border rounded-full py-2.5 text-sm">Demo: sign in as admin (demo only — not a real admin account)</button>}
   </div>
 }
 
 export function ProfilePage() {
-  const { user, orders, logout } = useShop(); const nav = useNavigate()
+  const { user, orders, logout, authLoading } = useShop(); const nav = useNavigate()
+  if (authLoading) return <div className="max-w-3xl mx-auto px-4 py-16 text-center"><h1 className="text-2xl font-bold">Loading…</h1></div>
   if (!user) return <div className="max-w-3xl mx-auto px-4 py-16 text-center"><h1 className="text-2xl font-bold">Please login first</h1><Link to="/login" className="underline">Go to login</Link></div>
-  return <div className="max-w-4xl mx-auto px-4 py-8"><h1 className="text-3xl font-bold">My Profile</h1><p className="text-neutral-600">{user.name} • {user.email} {user.isAdmin && '• Admin (demo)'}</p><button onClick={() => { logout(); nav('/') }} className="border rounded-full px-4 py-2 mt-3 text-sm">Logout</button>
+  return <div className="max-w-4xl mx-auto px-4 py-8"><h1 className="text-3xl font-bold">My Profile</h1><p className="text-neutral-600">{user.name} • {user.email} {user.isAdmin && (demoMode ? ' • Admin (demo)' : ' • Admin')}</p><button onClick={() => { logout(); nav('/') }} className="border rounded-full px-4 py-2 mt-3 text-sm">Logout</button>
     <h2 className="text-xl font-bold mt-8 mb-3">My Orders</h2>{orders.length === 0 ? <p className="text-neutral-500">No orders yet.</p> : orders.map(o => <div key={o.id} className="border rounded-xl p-4 mb-3 flex justify-between"><div><p className="font-semibold">{o.id} — {o.date}</p><p className="text-sm text-neutral-600">{o.items.map(i => `${i.product.name} × ${i.qty}`).join(', ')}</p><p className="text-sm">{o.payment} • {o.paymentStatus}</p></div><span className="font-bold">{formatPKR(o.total)} • {o.status}</span></div>)}
   </div>
 }
