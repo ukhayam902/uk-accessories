@@ -35,3 +35,11 @@ input[type='radio'], input[type='checkbox'] { accent-color: #080808; }
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; }
 }
+
+/* Mobile fixed-scale safeguards: keep the layout at normal size on phones and
+   stop the page looking zoomed-out (horizontal overflow). overflow-x: clip
+   (not hidden) is used so the sticky header keeps working. */
+html, body { max-width: 100%; overflow-x: clip; }
+body { touch-action: manipulation; }
+button, a { touch-action: manipulation; }
+img, video { max-width: 100%; height: auto; }
