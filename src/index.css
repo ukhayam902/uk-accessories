@@ -7,8 +7,18 @@
   --color-silver: #c0c0c0;
 }
 
-html { scroll-behavior: smooth; }
-body { background: #ffffff; color: #080808; font-family: ui-sans-system, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { background: #ffffff; color: #080808; font-family: ui-sans-system, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+::selection { background: #080808; color: #ffffff; }
+/* Visible, consistent keyboard focus — required for accessibility. */
+:focus-visible { outline: 2px solid #080808; outline-offset: 3px; }
+input[type='range'] { accent-color: #080808; }
+input[type='radio'], input[type='checkbox'] { accent-color: #080808; }
+/* Horizontal scroll rows (admin tabs) without a visible scrollbar. */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.toast-in { animation: toast-in 0.25s ease-out; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }

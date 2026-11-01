@@ -39,6 +39,16 @@ WhatsApp: **+92 3170851250** • Currency: **PKR** • Primary market: Pakistan.
   admin checks in live mode, and falls back to browser-local edits only in
   demo mode. COD and manual JazzCash/Easypaisa stay separate; manual
   payments stay "Pending verification" until an admin approves/rejects them.
+- **UI/UX overhaul (2026-11-01).** Same brand (black #080808, white,
+  #F7F7F7, silver #C0C0C0, #171717), slogan and hero copy, but rebuilt
+  presentation: sticky header with working mobile menu + search on all
+  screen sizes, hero with a featured-product visual + illustration tiles
+  (representative illustrations only, labelled as such — the old
+  `src/assets/hero.png` is an unrelated generic graphic and is not used),
+  collection cards with per-category illustrations, consistent card/button/
+  form styles, 44px-class tap targets, visible focus rings, sticky order
+  summaries, checkout steps, order-tracking timeline, and honest empty
+  states everywhere. No fake reviews, stats, photos or branding were added.
 - **No secrets are committed.** Only `.env.example` is shipped. Never commit
   `.env`, an anon key beyond the public frontend key, or a service-role key.
 

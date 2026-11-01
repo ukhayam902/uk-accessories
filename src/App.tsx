@@ -23,7 +23,7 @@ import { AdminPage } from './pages/admin'
 function Toast() {
   const { toast } = useShop()
   if (!toast) return null
-  return <div role="status" className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-black text-white px-5 py-3 rounded-full shadow-lg text-sm">{toast}</div>
+  return <div role="status" className="toast-in fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-black text-white px-5 py-3 rounded-2xl shadow-xl text-sm text-center max-w-[calc(100vw-2rem)] leading-relaxed">{toast}</div>
 }
 
 export default function App() {
