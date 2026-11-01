@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { formatPKR } from '../data/catalog'
 import { categoryNameFor, useShop } from '../store/shop'
-import { demoMode } from '../lib/supabase'
+import { demoMode, supabase } from '../lib/supabase'
 
 const TABS = ['Overview', 'Products', 'Categories', 'Orders', 'Customers', 'Inventory', 'Coupons', 'Reviews', 'Payments', 'Shipping', 'Analytics', 'Website Content', 'Settings', 'Admin Profile'] as const
 const ORDER_STATUSES = ['Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Refunded']
@@ -44,7 +44,18 @@ export function AdminPage() {
   }, [orders])
   const [busy, setBusy] = useState<string | null>(null)
   const [formMsg, setFormMsg] = useState<string | null>(null)
-  const [prodForm, setProdForm] = useState({ id: '', name: '', price: '', stock: '', category: 'cases', description: '', featured: false, bestseller: false })
+  const [prodForm, setProdForm] = useState({ id: '', name: '', price: '', stock: '', category: 'cases', description: '', image: '', featured: false, bestseller: false })
+  // Product image state: prodForm.image is the saved/pasted URL; prodPrevImage is
+  // the image the form started with, so Remove restores it; prodImageFile /
+  // prodUploadPreview hold a not-yet-saved upload. Uploading only happens on
+  // Save, so a failed upload never saves a product with a broken image.
+  const [prodPrevImage, setProdPrevImage] = useState('')
+  const [prodImageFile, setProdImageFile] = useState<File | null>(null)
+  const [prodUploadPreview, setProdUploadPreview] = useState<string | null>(null)
+  const [prodUploading, setProdUploading] = useState(false)
+  const prodDisplayImage = prodUploadPreview ?? (prodForm.image || '')
+  const clearProdImageUpload = () => { setProdImageFile(null); setProdUploadPreview(null) }
+  const resetProdForm = () => { setProdForm({ id: '', name: '', price: '', stock: '', category: 'cases', description: '', image: '', featured: false, bestseller: false }); setProdPrevImage(''); clearProdImageUpload() }
   const [catForm, setCatForm] = useState({ id: '', name: '', slug: '', description: '' })
   const [couponForm, setCouponForm] = useState({ code: '', discountType: 'percent', discountValue: '', minOrder: '', active: true })
   const [shipForm, setShipForm] = useState({ id: '', name: '', price: '', freeOver: '', zone: 'Pakistan', estimateDays: '', active: true })
@@ -104,25 +115,64 @@ export function AdminPage() {
             <select className={inputCls} value={prodForm.category} onChange={e => setProdForm({ ...prodForm, category: e.target.value })}>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
             <textarea className={`${inputCls} sm:col-span-2`} placeholder="Description" value={prodForm.description} onChange={e => setProdForm({ ...prodForm, description: e.target.value })} />
           </div>
+          <div className="border rounded-xl p-3 mt-3">
+            <p className="font-semibold text-sm">Product image</p>
+            {prodDisplayImage ? <img src={prodDisplayImage} alt="Product image preview" className="w-24 h-24 object-contain bg-[#F7F7F7] rounded-xl mt-2" /> : <p className="text-sm text-neutral-500 mt-2">No image yet — a default illustration will be used.</p>}
+            <label className="block text-sm font-semibold mt-3">Upload image
+              <input className="block mt-1 text-sm font-normal" type="file" accept="image/*" onChange={e => {
+                const f = e.target.files?.[0] ?? null
+                if (!f) return
+                if (!f.type.startsWith('image/')) { setFormMsg('Image upload failed: please choose an image file.'); return }
+                if (f.size > 5 * 1024 * 1024) { setFormMsg('Image upload failed: please choose an image under 5 MB.'); return }
+                setFormMsg(null); setProdImageFile(f); setProdUploadPreview(URL.createObjectURL(f))
+              }} />
+            </label>
+            {prodUploadPreview && <p className="text-sm text-neutral-500 mt-1">New upload preview — it is saved only when you click Save product.</p>}
+            <label className="block text-sm font-semibold mt-3">Or paste image URL
+              <input className={`${inputCls} mt-1`} placeholder="https://… or /images/… (leave blank to keep the current image)" value={prodForm.image} onChange={e => { setProdForm({ ...prodForm, image: e.target.value }); clearProdImageUpload() }} />
+            </label>
+            {(prodUploadPreview || prodForm.image !== prodPrevImage) && <button onClick={() => { clearProdImageUpload(); setProdForm({ ...prodForm, image: prodPrevImage }) }} className="border rounded-full px-3 py-1.5 text-sm mt-3">Remove / restore previous image</button>}
+            {prodUploading && <p className="text-sm text-neutral-500 mt-2">Uploading image…</p>}
+            <p className="text-sm text-neutral-500 mt-2">Live mode: the uploaded file goes to Supabase Storage bucket <code>product-images</code> and its public URL is saved as the product image. Demo mode: uploads are local-only in this browser and are not saved to Supabase. Images are representative photos/illustrations, not exact photos of a specific model, until real shop photos are added.</p>
+          </div>
           <label className="text-sm mr-4"><input type="checkbox" checked={prodForm.featured} onChange={e => setProdForm({ ...prodForm, featured: e.target.checked })} /> Featured</label>
           <label className="text-sm"><input type="checkbox" checked={prodForm.bestseller} onChange={e => setProdForm({ ...prodForm, bestseller: e.target.checked })} /> Bestseller</label>
           <div className="flex gap-2 mt-3">
-            <button disabled={busy !== null} onClick={async () => {
+            <button disabled={busy !== null || prodUploading} onClick={async () => {
               if (!prodForm.name.trim()) { setFormMsg('Enter a product name first.'); return }
-              const payload = { name: prodForm.name.trim(), price: Number(prodForm.price) || 0, stock: Number(prodForm.stock) || 0, category: prodForm.category, description: prodForm.description, featured: prodForm.featured, bestseller: prodForm.bestseller }
+              let image = prodForm.image.trim()
+              if (prodImageFile) {
+                if (demoMode) {
+                  // Demo uploads are local-only: use the browser preview URL.
+                  image = prodUploadPreview ?? image
+                } else {
+                  if (!supabase) { setFormMsg('Image upload failed: Supabase is not configured.'); return }
+                  setProdUploading(true); setFormMsg(null)
+                  const ext = prodImageFile.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg'
+                  const key = prodForm.id || prodForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+                  const path = `products/${key}-${Date.now()}.${ext}`
+                  const { error: upErr } = await supabase.storage.from('product-images').upload(path, prodImageFile, { upsert: true })
+                  setProdUploading(false)
+                  if (upErr) { setFormMsg(`Image upload failed: ${upErr.message} — product was not saved. Please try again.`); return }
+                  image = supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl
+                }
+              }
+              const existingImage = prodForm.id ? products.find(x => x.id === prodForm.id)?.image : undefined
+              const finalImage = image || existingImage || '/images/earbuds.svg'
+              const payload = { name: prodForm.name.trim(), price: Number(prodForm.price) || 0, stock: Number(prodForm.stock) || 0, category: prodForm.category, description: prodForm.description, image: finalImage, featured: prodForm.featured, bestseller: prodForm.bestseller }
               if (demoMode) {
-                setProducts(prodForm.id ? products.map(p => p.id === prodForm.id ? { ...p, ...payload } : p) : [...products, { id: prodForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), sku: `UK-${prodForm.name.toUpperCase().slice(0, 20)}`, slug: prodForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), image: '/images/earbuds.svg', specs: [], colours: ['Black'], seoTitle: prodForm.name, seoDescription: '', isDemo: true, ...payload }])
-                setFormMsg('Product saved in this browser only (demo mode).'); setProdForm({ id: '', name: '', price: '', stock: '', category: 'cases', description: '', featured: false, bestseller: false })
+                setProducts(prodForm.id ? products.map(p => p.id === prodForm.id ? { ...p, ...payload } : p) : [...products, { id: prodForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), sku: `UK-${prodForm.name.toUpperCase().slice(0, 20)}`, slug: prodForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), specs: [], colours: ['Black'], seoTitle: prodForm.name, seoDescription: '', isDemo: true, ...payload }])
+                setFormMsg('Product saved in this browser only (demo mode). Uploaded images are local-only in demo mode.'); resetProdForm()
               } else if (await run('Product', () => saveProductLive(prodForm.id ? { ...payload, id: prodForm.id, slug: products.find(p => p.id === prodForm.id)?.slug } : payload))) {
-                setProdForm({ id: '', name: '', price: '', stock: '', category: 'cases', description: '', featured: false, bestseller: false })
+                resetProdForm()
               }
             }} className="bg-black text-white rounded-full px-4 py-2 text-sm">Save product</button>
-            {prodForm.id && <button onClick={() => setProdForm({ id: '', name: '', price: '', stock: '', category: 'cases', description: '', featured: false, bestseller: false })} className="border rounded-full px-4 py-2 text-sm">Cancel edit</button>}
+            {prodForm.id && <button onClick={() => resetProdForm()} className="border rounded-full px-4 py-2 text-sm">Cancel edit</button>}
           </div>
           {demoMode && <p className="text-sm text-neutral-500 mt-2">Demo mode: product edits stay in this browser. In live mode the same form writes to Supabase <code>products</code> (RLS admin-only).</p>}
         </div>
-        {products.map(p => <div key={p.id} className="border rounded-xl p-3 mb-2 flex flex-wrap justify-between gap-3"><div><p className="font-semibold">{p.name}</p><p className="text-sm text-neutral-500">{categoryNameFor(categories, p.category)} • SKU {p.sku} • Stock {p.stock} • {formatPKR(p.price)}{p.isDemo ? ' • Demo price — approve only after the owner confirms it' : ''}</p></div><span className="flex gap-2 text-sm">
-          <button onClick={() => setProdForm({ id: p.id, name: p.name, price: String(p.price), stock: String(p.stock), category: p.category, description: p.description, featured: Boolean(p.featured), bestseller: Boolean(p.bestseller) })} className="border rounded-full px-3 py-1">Edit</button>
+        {products.map(p => <div key={p.id} className="border rounded-xl p-3 mb-2 flex flex-wrap justify-between gap-3 items-center"><img src={p.image} alt="" className="w-12 h-12 object-contain bg-[#F7F7F7] rounded-lg shrink-0" /><div className="flex-1 min-w-0"><p className="font-semibold">{p.name}</p><p className="text-sm text-neutral-500">{categoryNameFor(categories, p.category)} • SKU {p.sku} • Stock {p.stock} • {formatPKR(p.price)}{p.isDemo ? ' • Demo price — approve only after the owner confirms it' : ''}</p></div><span className="flex gap-2 text-sm">
+          <button onClick={() => { setProdForm({ id: p.id, name: p.name, price: String(p.price), stock: String(p.stock), category: p.category, description: p.description, image: p.image, featured: Boolean(p.featured), bestseller: Boolean(p.bestseller) }); setProdPrevImage(p.image); clearProdImageUpload() }} className="border rounded-full px-3 py-1">Edit</button>
           {!demoMode && p.isDemo && <button onClick={() => void run('Approve product', () => approveProductLive(p.id))} className="border rounded-full px-3 py-1">Approve (remove demo label)</button>}
           <button onClick={async () => { if (!window.confirm(`Delete ${p.name}?`)) return; if (demoMode) { setProducts(products.filter(x => x.id !== p.id)); setFormMsg('Product deleted in this browser only (demo mode).') } else await run('Delete product', () => deleteProductLive(p.id)) }} className="border rounded-full px-3 py-1">Delete</button>
         </span></div>)}
