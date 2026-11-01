@@ -125,46 +125,82 @@ export function ProductPage() {
         </div>
       </div>
       <h2 className="text-2xl font-bold mt-12 mb-4">Related products</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">{related.map(x => <ProductCard key={x.id} p={x} />)}</div>
+      <ReviewForm productId={p.id} />
     </div>
   )
 }
 
+export function ReviewForm({ productId }: { productId: string }) {
+  const { user, submitReview } = useShop()
+  const [rating, setRating] = useState(5); const [body, setBody] = useState(''); const [msg, setMsg] = useState<string | null>(null)
+  if (demoMode) return <div className="mt-12"><h2 className="text-2xl font-bold mb-2">Reviews</h2><p className="text-neutral-600 text-sm">Reviews are saved in live mode only. No reviews have been invented for this product.</p></div>
+  return <div className="mt-12"><h2 className="text-2xl font-bold mb-2">Write a review</h2>
+    {!user ? <p className="text-neutral-600 text-sm">Please <Link to="/login" className="underline">sign in</Link> to write a review. Reviews stay pending until an admin approves them.</p> : <>
+      {msg && <p className="text-sm bg-green-50 border border-green-200 text-green-800 rounded px-3 py-2 mb-3">{msg}</p>}
+      <form className="grid gap-3 max-w-xl" onSubmit={async e => { e.preventDefault(); const res = await submitReview(productId, rating, body); if (res.error) setMsg(res.error); else { setMsg('Thanks! Your review is pending admin approval.'); setBody('') } }}>
+        <label className="text-sm font-semibold">Rating <select value={rating} onChange={e => setRating(Number(e.target.value))} className="border rounded px-2 py-1 ml-2">{[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n} star{n > 1 ? 's' : ''}</option>)}</select></label>
+        <textarea required value={body} onChange={e => setBody(e.target.value)} placeholder="Your review…" rows={3} className="border rounded-xl px-3 py-2" />
+        <button className="bg-black text-white rounded-full py-2.5 w-fit px-6">Submit review</button>
+      </form>
+    </>}
+  </div>
+}
+
 export function CartPage() {
-  const { cart, setQty, removeFromCart, applyCoupon, coupon } = useShop(); const nav = useNavigate(); const [code, setCode] = useState('')
+  const { cart, setQty, removeFromCart, applyCoupon, coupon, couponDiscount, shippingFor } = useShop(); const nav = useNavigate(); const [code, setCode] = useState('')
   const subtotal = cart.reduce((s, i) => s + i.product.price * i.qty, 0)
-  const discount = coupon === 'UK10' ? Math.round(subtotal * 0.1) : 0
-  const shipping = subtotal === 0 ? 0 : subtotal - discount >= 5000 ? 0 : 250
+  const discount = couponDiscount(subtotal)
+  const shipping = shippingFor(subtotal - discount)
   if (!cart.length) return <div className="max-w-3xl mx-auto px-4 py-16 text-center"><h1 className="text-3xl font-bold">Your cart is empty</h1><p className="text-neutral-600 mt-2">Browse the shop and add something you like.</p><Link to="/shop" className="inline-block mt-5 bg-black text-white px-6 py-2.5 rounded-full">Shop Now</Link></div>
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 grid lg:grid-cols-3 gap-8"><div className="lg:col-span-2"><h1 className="text-3xl font-bold">Shopping Cart</h1><div className="divide-y mt-4">{cart.map(i => <div key={i.product.id} className="py-4 flex gap-4"><img src={i.product.image} alt={i.product.name} className="w-20 h-20 rounded-xl bg-[#F7F7F7]" /><div className="flex-1"><Link to={`/product/${i.product.slug}`} className="font-semibold">{i.product.name}</Link><p className="text-sm text-neutral-500">{i.colour} • {formatPKR(i.product.price)}</p><div className="flex gap-2 mt-2"><button aria-label="Decrease" onClick={() => setQty(i.product.id, i.qty - 1)} className="border rounded-full p-1"><Minus size={14} /></button><span>{i.qty}</span><button aria-label="Increase" onClick={() => setQty(i.product.id, i.qty + 1)} className="border rounded-full p-1"><Plus size={14} /></button><button onClick={() => removeFromCart(i.product.id)} className="text-red-600 text-sm ml-2">Remove</button></div></div><span className="font-bold">{formatPKR(i.product.price * i.qty)}</span></div>)}</div></div>
       <aside className="border rounded-2xl p-5 h-fit"><h2 className="font-bold">Summary</h2><div className="space-y-2 text-sm mt-3"><p className="flex justify-between"><span>Subtotal</span><span>{formatPKR(subtotal)}</span></p><p className="flex justify-between"><span>Discount {coupon ? `(${coupon})` : ''}</span><span>-{formatPKR(discount)}</span></p><p className="flex justify-between"><span>Shipping {subtotal - discount >= 5000 ? '(free over Rs. 5,000)' : ''}</span><span>{formatPKR(shipping)}</span></p><p className="flex justify-between font-bold text-base border-t pt-2"><span>Total</span><span>{formatPKR(subtotal - discount + shipping)}</span></p></div>
-        <form className="flex gap-2 mt-4" onSubmit={e => { e.preventDefault(); alert(applyCoupon(code) ? 'Coupon UK10 applied (demo)' : 'Invalid coupon in demo mode. Try UK10.') }}><input value={code} onChange={e => setCode(e.target.value)} placeholder="Coupon code" className="border rounded-full px-3 py-2 flex-1 text-sm" /><button className="border rounded-full px-4 text-sm">Apply</button></form>
+        <form className="flex gap-2 mt-4" onSubmit={e => { e.preventDefault(); alert(applyCoupon(code) ? `Coupon ${code.trim().toUpperCase()} applied.` : 'Invalid or expired coupon.') }}><input value={code} onChange={e => setCode(e.target.value)} placeholder="Coupon code" className="border rounded-full px-3 py-2 flex-1 text-sm" /><button className="border rounded-full px-4 text-sm">Apply</button></form>
         <button onClick={() => nav('/checkout')} className="w-full bg-black text-white rounded-full py-3 mt-4">Proceed to Checkout</button></aside></div>
   )
 }
 
 export function CheckoutPage() {
-  const { cart, placeOrder, user } = useShop()
+  const { cart, placeOrder, placeOrderLive, couponDiscount, shippingFor, user } = useShop()
   const [payment, setPayment] = useState('Cash on Delivery'); const [txnId, setTxnId] = useState(''); const [done, setDone] = useState<string | null>(null)
-  const subtotal = cart.reduce((s, i) => s + i.product.price * i.qty, 0); const shipping = subtotal >= 5000 ? 0 : 250
-  const submit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); const fd = new FormData(e.currentTarget)
-    const order = placeOrder({ items: cart, total: subtotal + shipping, payment, name: String(fd.get('name')), city: String(fd.get('city')), txnId: txnId || undefined })
-    setDone(order.id)
+  const [screenshot, setScreenshot] = useState<File | null>(null); const [orderError, setOrderError] = useState<string | null>(null); const [placing, setPlacing] = useState(false)
+  const subtotal = cart.reduce((s, i) => s + i.product.price * i.qty, 0)
+  const discount = couponDiscount(subtotal); const shipping = shippingFor(subtotal - discount); const total = subtotal - discount + shipping
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); setOrderError(null); setPlacing(true)
+    try {
+      const fd = new FormData(e.currentTarget)
+      if (demoMode) {
+        const order = placeOrder({ items: cart, total, payment, name: String(fd.get('name')), city: String(fd.get('city')), txnId: txnId || undefined })
+        setDone(order.id); return
+      }
+      // Live mode: the server creates the order (create_order in migration
+      // 003), validates prices/stock, and decrements stock atomically.
+      // On failure the cart is kept and the error is shown — no fake order.
+      const res = await placeOrderLive({
+        name: String(fd.get('name')), city: String(fd.get('city')), phone: String(fd.get('phone')),
+        email: String(fd.get('email')), country: String(fd.get('country')), address: String(fd.get('address')),
+        postalCode: String(fd.get('postal') || ''), notes: String(fd.get('notes') || ''),
+        payment, txnId: txnId || undefined, screenshot,
+      })
+      if (res.error || !res.order) { setOrderError(res.error || 'Order could not be created. Your cart was kept.'); return }
+      setDone(res.order.id)
+    } finally { setPlacing(false) }
   }
-  if (done) return <div className="max-w-2xl mx-auto px-4 py-16 text-center"><h1 className="text-3xl font-bold">Order placed — {done}</h1><p className="text-neutral-600 mt-3">Thank you! In demo mode this order is saved in this browser only. {payment === 'Cash on Delivery' ? 'Pay on delivery.' : 'Your manual payment is marked pending verification — the shop will confirm it.'}</p><Link to="/track" className="inline-block mt-5 bg-black text-white px-6 py-2.5 rounded-full">Track Order</Link></div>
+  if (done) return <div className="max-w-2xl mx-auto px-4 py-16 text-center"><h1 className="text-3xl font-bold">Order placed — {done}</h1><p className="text-neutral-600 mt-3">Thank you! {demoMode ? 'In demo mode this order is saved in this browser only.' : 'Your order is saved in Supabase and the shop can see it in /admin → Orders.'} {payment === 'Cash on Delivery' ? 'Pay on delivery.' : 'Your manual payment is marked pending verification — the shop will confirm it.'}</p><Link to="/track" className="inline-block mt-5 bg-black text-white px-6 py-2.5 rounded-full">Track Order</Link></div>
   if (!cart.length) return <div className="max-w-3xl mx-auto px-4 py-16 text-center"><h1 className="text-3xl font-bold">Checkout</h1><p className="mt-2">Your cart is empty.</p><Link to="/shop" className="underline">Back to shop</Link></div>
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8"><h1 className="text-3xl font-bold">Checkout</h1>{demoMode && <p className="text-sm bg-amber-50 border border-amber-200 p-3 rounded mt-3">Demo mode: orders are created in this browser. In live Supabase mode, orders must be created server-side with inventory checks (see README).</p>}
+    <div className="max-w-7xl mx-auto px-4 py-8"><h1 className="text-3xl font-bold">Checkout</h1>{demoMode && <p className="text-sm bg-amber-50 border border-amber-200 p-3 rounded mt-3">Demo mode: orders are created in this browser only.</p>}
+      {orderError && <p role="alert" className="text-sm bg-red-50 border border-red-200 text-red-800 rounded px-3 py-2 mt-4">{orderError}</p>}
       <form onSubmit={submit} className="grid lg:grid-cols-3 gap-8 mt-6"><div className="lg:col-span-2 grid sm:grid-cols-2 gap-4">
         <Field name="name" label="Full name *" required /><Field name="phone" label="Phone number *" required /><Field name="email" label="Email *" type="email" defaultValue={user?.email || ''} required /><Field name="country" label="Country *" defaultValue="Pakistan" required /><Field name="city" label="City *" required /><Field name="postal" label="Postal code" /><div className="sm:col-span-2"><label className="text-sm font-semibold block mb-1">Complete address *</label><textarea name="address" required className="border rounded-xl w-full px-3 py-2" rows={3} /></div>
         <div className="sm:col-span-2"><label className="text-sm font-semibold block mb-1">Order notes</label><textarea name="notes" className="border rounded-xl w-full px-3 py-2" rows={2} /></div>
         <fieldset className="sm:col-span-2 border rounded-xl p-4"><legend className="font-semibold px-2">Payment method</legend>
           {['Cash on Delivery', 'JazzCash (manual)', 'Easypaisa (manual)'].map(m => <label key={m} className="flex gap-2 py-1 text-sm"><input type="radio" name="payment" checked={payment === m} onChange={() => setPayment(m)} />{m}</label>)}
-          {payment !== 'Cash on Delivery' && <div className="bg-[#F7F7F7] rounded-xl p-4 mt-3 text-sm"><p><strong>Manual payment — no account details are published here.</strong> The shop will share JazzCash/Easypaisa details on WhatsApp after you place the order, or you can message <a className="underline" href={whatsappLink}>WhatsApp +92 3170851250</a>.</p><label className="block mt-3 font-semibold">Transaction ID (if you have already paid)</label><input value={txnId} onChange={e => setTxnId(e.target.value)} className="border rounded-xl px-3 py-2 w-full mt-1" placeholder="e.g. TRX123456" /><label className="block mt-3 font-semibold">Payment screenshot (demo: file name only, not uploaded in demo mode)</label><input type="file" accept="image/*" className="mt-1" /><p className="text-neutral-500 mt-1">Status after order: Pending verification. Admin approves or rejects it in /admin → Payments.</p></div>}
+          {payment !== 'Cash on Delivery' && <div className="bg-[#F7F7F7] rounded-xl p-4 mt-3 text-sm"><p><strong>Manual payment — no account details are published here.</strong> The shop will share JazzCash/Easypaisa details on WhatsApp after you place the order, or you can message <a className="underline" href={whatsappLink}>WhatsApp +92 3170851250</a>.</p><label className="block mt-3 font-semibold">Transaction ID (if you have already paid)</label><input value={txnId} onChange={e => setTxnId(e.target.value)} className="border rounded-xl px-3 py-2 w-full mt-1" placeholder="e.g. TRX123456" /><label className="block mt-3 font-semibold">Payment screenshot</label><input type="file" accept="image/*" onChange={e => setScreenshot(e.target.files?.[0] ?? null)} className="mt-1" /><p className="text-neutral-500 mt-1">{demoMode ? 'Demo mode: the file name only is kept in this browser.' : 'Signed-in customers: the screenshot is uploaded to private Supabase Storage for admin verification. Guests: please share the screenshot on WhatsApp after ordering.'} Status after order: Pending verification. Admin approves or rejects it in /admin → Payments.</p></div>}
         </fieldset>
-        <button className="sm:col-span-2 bg-black text-white rounded-full py-3 font-semibold">Place Order — {formatPKR(subtotal + shipping)}</button>
-      </div><aside className="border rounded-2xl p-5 h-fit"><h2 className="font-bold">Order summary</h2>{cart.map(i => <p key={i.product.id} className="flex justify-between text-sm py-1"><span>{i.product.name} × {i.qty}</span><span>{formatPKR(i.product.price * i.qty)}</span></p>)}<p className="flex justify-between font-bold border-t pt-2 mt-2"><span>Total</span><span>{formatPKR(subtotal + shipping)}</span></p></aside></form></div>
+        <button disabled={placing} className="sm:col-span-2 bg-black text-white rounded-full py-3 font-semibold disabled:opacity-50">{placing ? 'Placing order…' : `Place Order — ${formatPKR(total)}`}</button>
+      </div><aside className="border rounded-2xl p-5 h-fit"><h2 className="font-bold">Order summary</h2>{cart.map(i => <p key={i.product.id} className="flex justify-between text-sm py-1"><span>{i.product.name} × {i.qty}</span><span>{formatPKR(i.product.price * i.qty)}</span></p>)}<p className="flex justify-between text-sm py-1"><span>Discount</span><span>-{formatPKR(discount)}</span></p><p className="flex justify-between text-sm py-1"><span>Shipping</span><span>{formatPKR(shipping)}</span></p><p className="flex justify-between font-bold border-t pt-2 mt-2"><span>Total</span><span>{formatPKR(total)}</span></p></aside></form></div>
   )
 }
 function Field({ name, label, required, type = 'text', defaultValue }: { name: string; label: string; required?: boolean; type?: string; defaultValue?: string }) {
@@ -242,8 +278,8 @@ export function WishlistPage() {
 export function TrackPage() {
   const { orders } = useShop(); const [id, setId] = useState(''); const [found, setFound] = useState<typeof orders[0] | null>(null)
   return <div className="max-w-2xl mx-auto px-4 py-12"><h1 className="text-3xl font-bold">Order Tracking</h1><form className="flex gap-2 mt-5" onSubmit={e => { e.preventDefault(); setFound(orders.find(o => o.id === id.trim()) || null) }}><input value={id} onChange={e => setId(e.target.value)} placeholder="Order ID, e.g. UK-123456" className="border rounded-full px-4 py-2.5 flex-1" /><button className="bg-black text-white px-5 rounded-full">Track</button></form>
-    {found ? <div className="border rounded-xl p-5 mt-5"><p className="font-bold">{found.id} — {found.status}</p><p className="text-sm text-neutral-600">{found.items.map(i => `${i.product.name} × ${i.qty}`).join(', ')}</p><p className="text-sm">Payment: {found.payment} ({found.paymentStatus}) • Total {formatPKR(found.total)}</p><p className="text-sm mt-2">Statuses: Pending → Confirmed → Processing → Shipped → Delivered (Cancelled / Refunded where applicable).</p></div> : id && <p className="text-neutral-500 mt-4">No demo order found with that ID in this browser.</p>}
-    <h2 className="font-bold mt-8 mb-2">Your demo orders</h2>{orders.map(o => <p key={o.id} className="text-sm border rounded p-3 mb-2">{o.id} — {o.status} — {formatPKR(o.total)}</p>)}</div>
+    {found ? <div className="border rounded-xl p-5 mt-5"><p className="font-bold">{found.id} — {found.status}</p><p className="text-sm text-neutral-600">{found.items.map(i => `${i.product.name} × ${i.qty}`).join(', ')}</p><p className="text-sm">Payment: {found.payment} ({found.paymentStatus}) • Total {formatPKR(found.total)}</p><p className="text-sm mt-2">Statuses: Pending → Confirmed → Processing → Shipped → Delivered (Cancelled / Refunded where applicable).</p></div> : id && <p className="text-neutral-500 mt-4">No order found with that ID here. Signed-in customers see their Supabase orders below; guest live orders appear here in the browser they were placed in.</p>}
+    <h2 className="font-bold mt-8 mb-2">Your orders</h2>{orders.map(o => <p key={o.id} className="text-sm border rounded p-3 mb-2">{o.id} — {o.status} — {formatPKR(o.total)}</p>)}</div>
 }
 
 export function StaticPage({ title, body }: { title: string; body: string }) {

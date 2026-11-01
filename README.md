@@ -6,17 +6,39 @@ WhatsApp: **+92 3170851250** • Currency: **PKR** • Primary market: Pakistan.
 
 ## Status — read this first
 
-- **Demo mode is the default.** The app runs fully in the browser (cart, checkout,
-  wishlist, admin preview) without Supabase, and every demo price / product is
-  labelled as a demo sample.
-- **Supabase live connection: NOT configured yet.** The existing project found in
-  the user's dashboard is:
+- **Demo mode is the fallback only.** Without Supabase env vars the app runs
+  fully in the browser (cart, checkout, wishlist, admin preview) and every
+  demo price / product is labelled as a demo sample.
+- **Supabase live connection: CONFIGURED on the deployed site.** The existing
+  project found in the user's dashboard is:
   - Organization: UK Mobile Zone (Free plan)
   - Project: "ukhayam902's Project"
   - Public URL: https://cnkdeotxnaxlavvrmzyr.supabase.co
   - Region: eu-west-1, reference: cnkdeotxnaxlavvrmzyr
-  - **Still missing: the anon public key.** It was not invented and is not in
-    this repo. Without it, live mode cannot start.
+  - Vercel project `uk-accessories` has `VITE_SUPABASE_URL` and
+    `VITE_SUPABASE_ANON_KEY` set for production + preview (verified
+    2026-11-01). The top demo banner is gone on the deployed site and
+    `/login` shows live Supabase copy — proof the client is created in the
+    build. Real sign-in as the admin was verified, and `/profile` shows Admin.
+  - Migrations 001 + 002 are applied; migration 003 (below) must still be run
+    before live checkout works — it is the one remaining Supabase step.
+- **Direct-load `/admin` blank-page fix (2026-11-01).** Root cause: a React
+  Hooks Rules violation in `src/pages/admin.tsx` — `useMemo` ran only after
+  early returns on `authLoading` / non-admin, so a direct load changed the
+  hook count between renders and React unmounted the tree as a blank page.
+  Post-login navigation worked only because `authLoading` was already false
+  on mount. Fix: all hooks and derived values now run before any early
+  return, and `src/App.tsx` has an ErrorBoundary so a future render crash
+  shows a visible message + Reload button instead of a blank page. The
+  Protected / not-signed-in / non-admin states are now three explicit
+  screens, so a signed-out visit never looks like a denial.
+- **Admin + live store wiring (2026-11-01).** Live checkout uses the
+  server-side `create_order()` function (migration 003); every admin tab
+  (Products, Categories, Orders, Customers, Inventory, Coupons, Reviews,
+  Payments, Shipping, Website Content, Settings) writes to Supabase via RLS
+  admin checks in live mode, and falls back to browser-local edits only in
+  demo mode. COD and manual JazzCash/Easypaisa stay separate; manual
+  payments stay "Pending verification" until an admin approves/rejects them.
 - **No secrets are committed.** Only `.env.example` is shipped. Never commit
   `.env`, an anon key beyond the public frontend key, or a service-role key.
 
@@ -37,6 +59,11 @@ npm run build
    - `supabase/migrations/002_auth_role_read.sql` (required for live login:
      lets a user read their own `user_roles` row and makes `is_admin()`
      SECURITY DEFINER, otherwise the admin check always returns false)
+   - `supabase/migrations/003_live_orders_and_policies.sql` (required for
+     live checkout and live admin writes: server-side `create_order()` that
+     validates prices/stock from the DB, computes totals server-side, and
+     decrements stock atomically, plus the missing customer/admin RLS
+     policies for orders, payments, coupons, reviews, profiles and addresses)
    - `supabase/seed.sql`
 3. In **Storage**, create buckets: `product-images`, `category-images`,
    `banners` (public read) and `payment-screenshots` (private; admin-only read,
@@ -83,17 +110,19 @@ assign the role to themselves.
 
 ## What is NOT yet live
 
-- Live Supabase Auth, orders, inventory transactions and Storage uploads
-  (needs the anon key above + migrations applied). Demo checkout/orders are
-  browser-local only.
+- Live checkout until migration 003 is run (see above). Until then,
+  `placeOrderLive` fails visibly and keeps the cart — no fake order is made.
+- Cart and wishlist stay browser-local (`carts`/`cart_items` and
+  `wishlists`/`wishlist_items` tables are not yet wired to the UI).
+- Guest live orders are visible to admins, but guest order tracking needs
+  the placing browser or WhatsApp confirmation (guests have no account to
+  list orders under).
+- Stock restore on cancel/refund is a best-effort admin-side increment,
+  not a server transaction.
 - Real product photos (current images are original representative SVG
   illustrations, labelled as such).
 - Real courier rates / international delivery (not advertised as available).
 - Social media links (placeholders only — owner has none yet).
-- Edge Functions for server-side order creation: the schema is ready, but a
-  production order flow should move order + inventory updates into a Supabase
-  Edge Function / Postgres function with row locking before going live with
-  real payments. Do not rely on client-side stock decrements for real orders.
 
 ## Deploy (Vercel)
 
