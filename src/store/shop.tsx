@@ -139,7 +139,10 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   // localStorage, so a stale demo sign-in can never resurrect an admin flag.
   const [user, setUser] = useState<User>(() => (demoMode ? load('uk-user', null) : null))
   const [authLoading, setAuthLoading] = useState<boolean>(() => !demoMode)
-  const [products, setProductsState] = useState<Product[]>(PRODUCTS)
+  // Live mode starts empty and is filled by the Supabase fetch below, so
+  // a deleted demo catalogue never flashes as the shop on first render.
+  // Demo mode keeps the local catalogue as its data source.
+  const [products, setProductsState] = useState<Product[]>(() => (demoMode ? PRODUCTS : []))
   const [categories, setCategories] = useState<Category[]>(CATEGORIES)
   const [coupon, setCoupon] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
@@ -156,8 +159,11 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   useEffect(() => { if (demoMode) localStorage.setItem('uk-user', JSON.stringify(user)) }, [user])
   useEffect(() => { if (toast) { const t = setTimeout(() => setToast(null), 3500); return () => clearTimeout(t) } }, [toast])
 
-  // Live catalogue: Supabase products/categories first, local catalogue only
-  // as a fallback when the query fails or returns empty (see code note below).
+  // Live catalogue: Supabase products/categories first. In live mode a
+  // successful product query that returns 0 rows means the shop is empty
+  // (e.g. after all demo products are deleted) and must set products to [],
+  // NOT fall back to the local catalogue. The local catalogue is kept only
+  // when the query errors, or when there is no Supabase client / demo mode.
   useEffect(() => {
     if (!supabase) return
     let cancelled = false
@@ -168,12 +174,12 @@ export function ShopProvider({ children }: { children: ReactNode }) {
           supabase.from('categories').select('*').order('name'),
         ])
         if (cancelled) return
-        if (!prodRes.error && prodRes.data && prodRes.data.length > 0) {
+        if (!prodRes.error && prodRes.data) {
           setProductsState((prodRes.data as Record<string, unknown>[]).map(mapDbProduct))
         }
-        // Fallback (intentional, documented): if the Supabase product query
-        // fails or returns empty, the local catalogue stays in place so the
-        // shop is never blank. The same applies to categories below.
+        // Categories are never deleted in the demo-removal flow, so the
+        // category fallback below is unchanged: only a failed/empty
+        // category query keeps the local categories.
         if (!catRes.error && catRes.data && catRes.data.length > 0) {
           setCategories((catRes.data as Record<string, unknown>[]).map(r => ({
             id: String(r.id), name: String(r.name), slug: String(r.slug),
@@ -197,7 +203,12 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     try {
       const prodQuery = supabase.from('products').select('*').order('created_at', { ascending: false })
       const prodRes = forUser?.isAdmin ? await prodQuery : await prodQuery.eq('published', true)
-      const mappedProducts = !prodRes.error && prodRes.data && prodRes.data.length > 0
+      // Same empty-shop rule as the initial fetch: a successful query with
+      // 0 rows sets products to [] (mappedProducts = []), and productById
+      // must then also be empty — it must NOT fall back to PRODUCTS.
+      // Only a query error (mappedProducts = null) keeps the local fallback,
+      // so order/review lookups still resolve names for existing orders.
+      const mappedProducts = !prodRes.error && prodRes.data
         ? (prodRes.data as Record<string, unknown>[]).map(mapDbProduct)
         : null
       if (mappedProducts) setProductsState(mappedProducts)
