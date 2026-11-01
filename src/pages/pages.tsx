@@ -1,7 +1,7 @@
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, Check, CheckCircle2, Heart, MessageCircle, Minus, Package, Plus, RotateCcw, Search, ShieldCheck, ShoppingCart, Truck, Zap } from 'lucide-react'
-import { useMemo, useState, type FormEvent } from 'react'
+import { ArrowRight, Check, CheckCircle2, ChevronDown, Heart, MessageCircle, Minus, Package, Plus, RotateCcw, Search, ShieldCheck, ShoppingCart, Truck, Zap } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react'
 import { formatPKR, whatsappLink, type Product } from '../data/catalog'
 import { categoryNameFor, useShop } from '../store/shop'
 import { demoMode } from '../lib/supabase'
@@ -45,23 +45,71 @@ export function ProductCard({ p }: { p: Product }) {
   )
 }
 
+
+function Reveal({ children, className = '', delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setVisible(true); return }
+    const obs = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) { setVisible(true); obs.disconnect() }
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' })
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+  return <div ref={ref} style={{ transitionDelay: `${delay}ms` }} className={`reveal ${visible ? 'reveal-visible' : ''} ${className}`}>{children}</div>
+}
+
+function HeroShowcase({ heroProduct, products }: { heroProduct?: Product; products: Product[] }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [tilt, setTilt] = useState({ rx: 0, ry: 0 })
+  const [active, setActive] = useState(false)
+  const watch = products.find(x => x.slug === 'smart-fitness-watch')
+  const earbuds = products.find(x => x.slug === 'premium-wireless-earbuds')
+  const phoneCase = products.find(x => x.slug === 'premium-silicone-phone-case')
+  const onMove = (e: MouseEvent<HTMLDivElement>) => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const r = ref.current?.getBoundingClientRect()
+    if (!r) return
+    const px = (e.clientX - r.left) / r.width - 0.5
+    const py = (e.clientY - r.top) / r.height - 0.5
+    setTilt({ rx: -py * 14, ry: px * 16 })
+    setActive(true)
+  }
+  const reset = () => { setTilt({ rx: 0, ry: 0 }); setActive(false) }
+  if (!heroProduct) return null
+  return (
+    <div style={{ perspective: '1100px' }} onMouseMove={onMove} onMouseLeave={reset}>
+      <div
+        ref={ref}
+        style={{ transform: `rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`, transformStyle: 'preserve-3d', transition: active ? 'transform 0.12s ease-out' : 'transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)' }}
+        className="relative"
+      >
+        <Link to={`/product/${heroProduct.slug}`} className="block bg-white text-[#080808] border border-neutral-200 rounded-[2rem] shadow-2xl shadow-black/40 overflow-hidden">
+          <div className="bg-[#F7F7F7]"><img src={heroProduct.image} alt={`${heroProduct.name} — representative image`} className="w-full aspect-[4/3] object-contain p-8 sm:p-10" /></div>
+          <div className="px-6 pb-6 pt-1 flex items-center justify-between gap-3"><div><p className="text-xs font-semibold tracking-[0.14em] text-neutral-500 uppercase">Featured</p><p className="font-bold text-lg leading-snug mt-1">{heroProduct.name}</p><p className="text-sm text-neutral-500 mt-0.5">Representative image • {formatPKR(heroProduct.price)}</p></div><span className="shrink-0 bg-black text-white rounded-full px-4 py-2 text-sm font-semibold">View</span></div>
+        </Link>
+        {watch && <div aria-hidden className="hero-float absolute -left-3 sm:-left-6 top-8 sm:top-12"><div style={{ transform: 'translateZ(70px)' }} className="bg-white text-[#080808] border border-neutral-200 rounded-2xl shadow-xl p-2.5 flex items-center gap-2"><img src={watch.image} alt="" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" /><span className="text-xs font-semibold leading-tight pr-1">Smart<br />Watch</span></div></div>}
+        {earbuds && <div aria-hidden className="hero-float-slow absolute -right-2 sm:-right-5 bottom-24 sm:bottom-28"><div style={{ transform: 'translateZ(55px)' }} className="bg-[#171717] text-white border border-white/10 rounded-2xl shadow-xl p-2.5 flex items-center gap-2"><img src={earbuds.image} alt="" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" /><span className="text-xs font-semibold leading-tight pr-1">Wireless<br />Earbuds</span></div></div>}
+        {phoneCase && <div aria-hidden className="hero-float absolute right-6 sm:right-10 -bottom-4"><div style={{ transform: 'translateZ(40px)' }} className="bg-white text-[#080808] border border-neutral-200 rounded-full shadow-xl px-3.5 py-2 text-xs font-semibold">Silicone Case • {formatPKR(phoneCase.price)}</div></div>}
+      </div>
+      <p className="text-xs text-neutral-400 mt-8 text-center">Move your mouse over the showcase to tilt it — product images are representative images.</p>
+    </div>
+  )
+}
+
 function SectionHeader({ title, subtitle, actionTo, actionLabel }: { title: string; subtitle?: string; actionTo?: string; actionLabel?: string }) {
   return <div className="flex flex-wrap items-end justify-between gap-3 mb-5"><div><h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{title}</h2>{subtitle && <p className="text-neutral-600 mt-1.5 text-sm sm:text-base">{subtitle}</p>}</div>{actionTo && <Link to={actionTo} className="inline-flex items-center gap-1.5 text-sm font-semibold hover:underline shrink-0">{actionLabel || 'View all'} <ArrowRight size={16} /></Link>}</div>
 }
 function Section({ title, subtitle, items, actionTo }: { title: string; subtitle?: string; items: Product[]; actionTo?: string }) {
   if (!items.length) return null
-  return <section className="max-w-7xl mx-auto px-4 py-10 sm:py-12"><SectionHeader title={title} subtitle={subtitle} actionTo={actionTo} actionLabel="View all" /><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">{items.map(p => <ProductCard key={p.id} p={p} />)}</div></section>
-}
-
-const CATEGORY_IMAGES: Record<string, string> = {
-  cases: '/images/case.svg', earbuds: '/images/earbuds.svg', headphones: '/images/headphones.svg',
-  chargers: '/images/charger.svg', cables: '/images/cable-usbc.svg', powerbanks: '/images/powerbank-20k.svg',
-  smartwatches: '/images/watch.svg', protectors: '/images/glass.svg', holders: '/images/stand.svg',
-  speakers: '/images/speaker.svg', gaming: '/images/sleeves.svg', gadgets: '/images/adapter-65w.svg',
+  return <Reveal><section className="max-w-7xl mx-auto px-4 py-10 sm:py-12"><SectionHeader title={title} subtitle={subtitle} actionTo={actionTo} actionLabel="View all" /><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">{items.map(p => <ProductCard key={p.id} p={p} />)}</div></section></Reveal>
 }
 
 export function Home() {
-  const { products, categories } = useShop()
+  const { products } = useShop()
   const [email, setEmail] = useState('')
   const [subscribed, setSubscribed] = useState(false)
   const featured = products.filter(p => p.featured)
@@ -69,47 +117,42 @@ export function Home() {
   const trending = products.filter(p => p.trending)
   const fresh = products.filter(p => p.isNew)
   const heroProduct = featured[0] ?? products[0]
-  const heroTiles = ['smartwatches', 'speakers', 'chargers'].map(id => products.find(p => p.category === id)).filter((p): p is Product => Boolean(p))
   return (
     <div>
-      <section className="bg-[#F7F7F7] border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 py-12 sm:py-16 grid lg:grid-cols-2 gap-10 items-center">
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <p className="inline-flex items-center rounded-full bg-white border border-neutral-200 px-3.5 py-1.5 tracking-[0.2em] text-[11px] font-semibold text-neutral-600">PREMIUM • MINIMAL • PAKISTAN</p>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.02] tracking-tight mt-5">TECHNOLOGY<br />MEETS STYLE.</h1>
-            <p className="text-lg sm:text-xl text-neutral-600 mt-5 leading-relaxed max-w-lg">Discover premium accessories designed for your everyday life.</p>
-            <div className="flex flex-wrap gap-3 mt-7"><Link to="/shop" className={`${BTN_BLACK} px-8 py-3.5 inline-flex items-center gap-2`}>Shop Now <ArrowRight size={18} /></Link><Link to="/about" className={`${BTN_OUTLINE} px-8 py-3.5`}>Our Story</Link></div>
-            <ul className="flex flex-wrap gap-x-5 gap-y-2 mt-7 text-sm text-neutral-700">
+      <section className="bg-[#080808] text-white overflow-hidden relative">
+        <div aria-hidden className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-white/10 blur-3xl" />
+        <div aria-hidden className="absolute bottom-0 left-1/3 w-72 h-72 rounded-full bg-[#C0C0C0]/10 blur-3xl" />
+        <div className="relative max-w-7xl mx-auto px-4 py-14 sm:py-20 lg:py-24 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+            <p className="inline-flex items-center rounded-full bg-white/10 border border-white/15 px-3.5 py-1.5 tracking-[0.2em] text-[11px] font-semibold text-neutral-300">PREMIUM • MINIMAL • PAKISTAN</p>
+            <h1 className="text-6xl sm:text-7xl lg:text-8xl font-extrabold leading-[0.95] tracking-tight mt-6">TECHNOLOGY<br />MEETS <span className="text-[#C0C0C0]">STYLE.</span></h1>
+            <p className="text-lg sm:text-xl text-neutral-300 mt-6 leading-relaxed max-w-lg">Discover premium accessories designed for your everyday life.</p>
+            <div className="flex flex-wrap gap-3 mt-8"><Link to="/shop" className="bg-white text-black rounded-full font-semibold hover:bg-[#F7F7F7] transition-colors px-8 py-3.5 inline-flex items-center gap-2">Shop Now <ArrowRight size={18} /></Link><a href={whatsappLink} target="_blank" rel="noreferrer" className="border border-white/30 rounded-full font-semibold hover:border-white transition-colors px-8 py-3.5 inline-flex items-center gap-2"><MessageCircle size={18} /> WhatsApp Us</a></div>
+            <ul className="flex flex-wrap gap-x-5 gap-y-2 mt-8 text-sm text-neutral-300">
               <li className="flex items-center gap-2"><Truck size={18} /> Cash on Delivery in Pakistan</li>
               <li className="flex items-center gap-2"><MessageCircle size={18} /> WhatsApp support: +92 3170851250</li>
               <li className="flex items-center gap-2"><ShieldCheck size={18} /> Manual payments verified by the shop</li>
             </ul>
-            {featured.length > 0 && featured[0].isDemo && <div className="mt-5 max-w-lg"><DemoNote /></div>}
+            {featured.length > 0 && featured[0].isDemo && <div className="mt-6 max-w-lg"><DemoNote /></div>}
+            <a href="#style-it-your-way" className="mt-10 inline-flex items-center gap-2 text-sm font-semibold text-neutral-300 hover:text-white transition-colors" aria-label="Scroll down to see more">Scroll <ChevronDown size={18} className="hero-scroll-cue" /></a>
           </motion.div>
-          <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
-            {heroProduct && <Link to={`/product/${heroProduct.slug}`} className="block bg-white border border-neutral-200 rounded-3xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-              <img src={heroProduct.image} alt={`${heroProduct.name} — representative image`} className="w-full aspect-[4/3] object-contain p-8" />
-              <div className="px-6 pb-6 flex items-center justify-between gap-3"><div><p className="text-xs font-semibold tracking-[0.14em] text-neutral-500 uppercase">Featured</p><p className="font-bold text-lg leading-snug mt-1">{heroProduct.name}</p><p className="text-sm text-neutral-500 mt-0.5">Representative image • {formatPKR(heroProduct.price)}</p></div><span className="shrink-0 bg-black text-white rounded-full px-4 py-2 text-sm font-semibold">View</span></div>
-            </Link>}
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-3 sm:mt-4">
-              {heroTiles.map(p => <Link key={p.id} to={`/product/${p.slug}`} className="bg-white border border-neutral-200 rounded-3xl p-3 sm:p-4 hover:shadow-md transition-shadow block"><img src={p.image} alt={`${p.name} — representative image`} loading="lazy" className="w-full aspect-square object-contain" /><p className="text-xs sm:text-sm font-semibold leading-snug mt-2 line-clamp-2">{p.name}</p><p className="text-xs sm:text-sm text-neutral-500 mt-0.5">{formatPKR(p.price)}</p></Link>)}
-            </div>
-            <p className="text-xs text-neutral-500 mt-3 text-center">Product images are representative images until the owner adds real shop photos.</p>
+          <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.1 }}>
+            <HeroShowcase heroProduct={heroProduct} products={products} />
           </motion.div>
         </div>
       </section>
-      <section className="max-w-7xl mx-auto px-4 py-10 sm:py-12"><SectionHeader title="Style it your way" subtitle="Worn. Styled. Everyday." actionTo="/shop" /><div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <Reveal><section id="style-it-your-way" className="max-w-7xl mx-auto px-4 py-10 sm:py-12 scroll-mt-24"><SectionHeader title="Style it your way" subtitle="Worn. Styled. Everyday." actionTo="/shop" /><div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Link to="/product/smart-fitness-watch" className="border border-neutral-200 rounded-3xl bg-white overflow-hidden hover:shadow-md transition-shadow block"><img src="/images/owner-watch-studio.webp" alt="Smart Fitness Watch worn on the wrist" loading="lazy" className="w-full aspect-[4/5] object-cover bg-[#F7F7F7]" /><div className="p-4"><p className="font-semibold leading-snug text-sm sm:text-base">Smart Fitness Watch</p><p className="text-xs sm:text-sm text-neutral-500 mt-1">Worn on the wrist, every day.</p><span className="text-xs sm:text-sm font-semibold mt-2 inline-flex items-center gap-1">Shop <ArrowRight size={14} /></span></div></Link>
         <Link to="/product/premium-wireless-earbuds" className="border border-neutral-200 rounded-3xl bg-white overflow-hidden hover:shadow-md transition-shadow block"><img src="/images/owner-earbuds-studio.webp" alt="Premium Wireless Earbuds worn in the ears" loading="lazy" className="w-full aspect-[4/5] object-cover bg-[#F7F7F7]" /><div className="p-4"><p className="font-semibold leading-snug text-sm sm:text-base">Premium Wireless Earbuds</p><p className="text-xs sm:text-sm text-neutral-500 mt-1">Worn in the ears, on the go.</p><span className="text-xs sm:text-sm font-semibold mt-2 inline-flex items-center gap-1">Shop <ArrowRight size={14} /></span></div></Link>
         <Link to="/product/wireless-bluetooth-headphones" className="border border-neutral-200 rounded-3xl bg-white overflow-hidden hover:shadow-md transition-shadow block"><img src="/images/owner-headphones-studio.webp" alt="Wireless Bluetooth Headphones worn over the ears" loading="lazy" className="w-full aspect-[4/5] object-cover bg-[#F7F7F7]" /><div className="p-4"><p className="font-semibold leading-snug text-sm sm:text-base">Wireless Bluetooth Headphones</p><p className="text-xs sm:text-sm text-neutral-500 mt-1">Worn over the ears, for work and travel.</p><span className="text-xs sm:text-sm font-semibold mt-2 inline-flex items-center gap-1">Shop <ArrowRight size={14} /></span></div></Link>
         <Link to="/product/premium-silicone-phone-case" className="border border-neutral-200 rounded-3xl bg-white overflow-hidden hover:shadow-md transition-shadow block"><img src="/images/owner-accessories-studio.webp" alt="Watch and earbuds worn, holding a phone in a silicone case" loading="lazy" className="w-full aspect-[4/5] object-cover bg-[#F7F7F7]" /><div className="p-4"><p className="font-semibold leading-snug text-sm sm:text-base">Watch + Earbuds + Silicone Case</p><p className="text-xs sm:text-sm text-neutral-500 mt-1">A full everyday carry, styled together.</p><span className="text-xs sm:text-sm font-semibold mt-2 inline-flex items-center gap-1">Shop <ArrowRight size={14} /></span></div></Link>
-      </div><p className="text-xs text-neutral-500 mt-4">Studio-style images — representative looks, not exact photos of every model.</p></section>
-      <section className="max-w-7xl mx-auto px-4 py-10 sm:py-12"><SectionHeader title="Shop by collection" subtitle="Twelve collections, from cases to gaming gear." actionTo="/shop" /><div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">{categories.map(c => <Link key={c.id} to={`/shop?category=${c.id}`} className="border border-neutral-200 rounded-3xl bg-white p-4 sm:p-5 hover:shadow-md hover:border-neutral-300 transition-shadow flex gap-3 sm:gap-4 items-center min-w-0"><img src={CATEGORY_IMAGES[c.id] ?? '/images/adapter-65w.svg'} alt="" aria-hidden className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#F7F7F7] object-contain p-2 shrink-0" /><span className="min-w-0"><span className="font-semibold block leading-snug text-sm sm:text-base">{c.name}</span><span className="text-xs sm:text-sm text-neutral-500 line-clamp-2">{c.description}</span><span className="text-xs sm:text-sm font-semibold mt-1 inline-flex items-center gap-1">Shop <ArrowRight size={14} /></span></span></Link>)}</div></section>
+      </div><p className="text-xs text-neutral-500 mt-4">Studio-style images — representative looks, not exact photos of every model.</p></section></Reveal>
+      
       <Section title="Featured products" subtitle="Hand-picked highlights from the catalogue." items={featured} actionTo="/shop" />
       <Section title="Best-selling products" subtitle="The items customers reach for most." items={best} actionTo="/shop" />
       <Section title="Trending products" subtitle="What's popular right now." items={trending} actionTo="/shop" />
       <Section title="New arrivals" subtitle="Fresh additions to the store." items={fresh} actionTo="/shop" />
-      <section className="max-w-7xl mx-auto px-4 py-10 sm:py-12"><div className="bg-[#080808] text-white rounded-3xl p-7 sm:p-10">
+      <Reveal><section className="max-w-7xl mx-auto px-4 py-10 sm:py-12"><div className="bg-[#080808] text-white rounded-3xl p-7 sm:p-10">
         <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Why Choose UK Accessories?</h2>
         <p className="text-neutral-300 mt-2 max-w-2xl leading-relaxed">Premium, minimalist accessories, clear PKR pricing, and human support on WhatsApp. No fake reviews are shown on this site — testimonials will only appear once real customers provide them.</p>
         <div className="grid md:grid-cols-3 gap-4 sm:gap-5 mt-7">
@@ -117,16 +160,16 @@ export function Home() {
           <div className="bg-[#171717] rounded-2xl p-5"><ShieldCheck className="mb-3 text-white" /><h3 className="font-bold">Manual payment verification</h3><p className="text-neutral-300 text-sm mt-1.5 leading-relaxed">JazzCash / Easypaisa payments are verified by the shop — no automatic payment claim is made.</p></div>
           <div className="bg-[#171717] rounded-2xl p-5"><MessageCircle className="mb-3 text-white" /><h3 className="font-bold">WhatsApp support</h3><p className="text-neutral-300 text-sm mt-1.5 leading-relaxed">Questions? <a className="underline" href={whatsappLink}>Chat on WhatsApp</a> (+92 3170851250).</p></div>
         </div>
-      </div></section>
-      <section className="max-w-7xl mx-auto px-4 py-10 sm:py-12"><SectionHeader title="Special offers" subtitle="Real offers are managed from the admin Coupons section once live." />
+      </div></section></Reveal>
+      <Reveal><section className="max-w-7xl mx-auto px-4 py-10 sm:py-12"><SectionHeader title="Special offers" subtitle="Real offers are managed from the admin Coupons section once live." />
         <div className="grid md:grid-cols-5 gap-4 sm:gap-5">
           <div className="md:col-span-2 bg-black text-white rounded-3xl p-6 sm:p-7 flex flex-col"><p className="text-xs font-semibold tracking-[0.2em] text-neutral-400">DEMO OFFER</p><p className="text-3xl font-extrabold mt-3">UK10</p><p className="text-neutral-300 text-sm mt-2 leading-relaxed">Use code <strong className="text-white">UK10</strong> at checkout for 10% off in demo mode.</p><Link to="/shop" className="mt-auto pt-6 inline-flex items-center gap-1.5 text-sm font-semibold hover:underline">Shop the offer <ArrowRight size={16} /></Link></div>
           <div className={`${CARD} md:col-span-3 p-6 sm:p-7`}><h3 className="font-bold text-lg">Customer testimonials</h3><p className="text-neutral-600 text-sm mt-2 leading-relaxed">No customer testimonials yet. This section is intentionally empty — no reviews have been invented.</p><div className="flex items-center gap-3 mt-5 bg-[#F7F7F7] rounded-2xl p-4"><Zap size={20} className="shrink-0" /><p className="text-sm text-neutral-700 leading-relaxed">Fast chargers, power banks, cases and more — every product card shows its stock and a clear PKR price.</p></div></div>
         </div>
-      </section>
-      <section className="max-w-7xl mx-auto px-4 pb-4"><div className="bg-[#F7F7F7] border border-neutral-200 rounded-3xl p-6 sm:p-8"><h2 className="text-2xl font-extrabold tracking-tight">Newsletter</h2><p className="text-neutral-600 text-sm mt-1.5">Get new arrivals and offers. No spam, unsubscribe anytime.</p>
+      </section></Reveal>
+      <Reveal><section className="max-w-7xl mx-auto px-4 pb-4"><div className="bg-[#F7F7F7] border border-neutral-200 rounded-3xl p-6 sm:p-8"><h2 className="text-2xl font-extrabold tracking-tight">Newsletter</h2><p className="text-neutral-600 text-sm mt-1.5">Get new arrivals and offers. No spam, unsubscribe anytime.</p>
         {subscribed ? <p role="status" className="mt-4 bg-white border border-neutral-200 rounded-xl px-4 py-3 text-sm">Thanks! In demo mode this subscription is not saved to Supabase yet.</p> : <form className="flex flex-col sm:flex-row gap-2 mt-4 max-w-md" onSubmit={e => { e.preventDefault(); setSubscribed(true) }}><label htmlFor="newsletter-email" className="sr-only">Email address</label><input id="newsletter-email" required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Your email" className={INPUT} /><button className={`${BTN_BLACK} px-6 py-3 text-sm shrink-0`}>Subscribe</button></form>}
-      </div></section>
+      </div></section></Reveal>
     </div>
   )
 }

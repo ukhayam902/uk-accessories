@@ -22,3 +22,16 @@ input[type='radio'], input[type='checkbox'] { accent-color: #080808; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
+
+/* Homepage scroll reveals: fade + rise, applied by the Reveal wrapper in pages.tsx. */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+.reveal-visible { opacity: 1; transform: none; }
+/* Hero 3D showcase: gentle float for layered floating cards (outer wrapper only, so translateZ depth is preserved on the inner card). */
+@keyframes hero-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.hero-float { animation: hero-float 6s ease-in-out infinite; }
+.hero-float-slow { animation: hero-float 8s ease-in-out infinite; }
+@keyframes hero-scroll-cue { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+.hero-scroll-cue { animation: hero-scroll-cue 2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; }
+}
