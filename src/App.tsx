@@ -1,5 +1,21 @@
+import { Component, type ReactNode } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { ShopProvider, useShop } from './store/shop'
+
+// A render crash used to leave a completely blank page (no header, no
+// message), most visibly on a direct load of /admin. An error boundary
+// turns that into a visible, recoverable message instead of a blank screen.
+class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  state = { error: null as Error | null }
+  static getDerivedStateFromError(error: Error) { return { error } }
+  componentDidCatch(error: Error) { console.error('UK Accessories render error', error) }
+  render() {
+    if (this.state.error) {
+      return <div className="max-w-2xl mx-auto px-4 py-16"><h1 className="text-3xl font-bold">Something went wrong</h1><p className="text-neutral-600 mt-3">The page hit a rendering error instead of loading. Reloading usually clears it; if it repeats on /admin, sign out and sign in again at /login, then return to /admin.</p><p className="text-sm text-neutral-500 mt-3 break-words">{this.state.error.message}</p><button onClick={() => window.location.reload()} className="mt-5 bg-black text-white px-6 py-2.5 rounded-full">Reload page</button></div>
+    }
+    return this.props.children
+  }
+}
 import { Layout } from './components/layout'
 import { AuthPage, CartPage, CheckoutPage, Home, ProductPage, ProfilePage, ShopPage, STATIC, StaticPage, TrackPage, WishlistPage } from './pages/pages'
 import { AdminPage } from './pages/admin'
@@ -14,6 +30,7 @@ export default function App() {
   return (
     <ShopProvider>
       <BrowserRouter>
+        <ErrorBoundary>
         <Layout>
           <Routes>
             <Route path="/" element={<Home />} />
@@ -34,6 +51,7 @@ export default function App() {
           </Routes>
         </Layout>
         <Toast />
+        </ErrorBoundary>
       </BrowserRouter>
     </ShopProvider>
   )
