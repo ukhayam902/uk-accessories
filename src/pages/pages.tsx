@@ -4,6 +4,7 @@ import { ArrowRight, Check, CheckCircle2, ChevronDown, Heart, MessageCircle, Min
 import { useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react'
 import { formatPKR, whatsappLink, type Product } from '../data/catalog'
 import { categoryNameFor, useShop } from '../store/shop'
+import { FAQ_JSON_LD, SITE_URL, productJsonLd, useSeo } from '../lib/seo'
 import { demoMode } from '../lib/supabase'
 
 const INPUT = 'border border-neutral-300 rounded-xl w-full px-3.5 py-3 text-sm outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition bg-white'
@@ -117,6 +118,7 @@ export function Home() {
   const trending = products.filter(p => p.trending)
   const fresh = products.filter(p => p.isNew)
   const heroProduct = featured[0] ?? products[0]
+  useSeo({ title: 'UK Accessories Pakistan — Mobile Accessories, Wireless Earbuds, Smartwatches | Upgrade Your Tech. Elevate Your Style.', description: 'UK Accessories Pakistan — premium mobile accessories in PKR: wireless earbuds, smartwatches, power banks, fast chargers, phone cases and screen protectors. Cash on Delivery in Pakistan, manual JazzCash/Easypaisa payment verification, WhatsApp support +92 3170851250.', path: '/', ogImage: `${SITE_URL}/images/earbuds-photo.webp` })
   return (
     <div>
       <section className="bg-[#080808] text-white overflow-hidden relative">
@@ -182,6 +184,7 @@ export function ShopPage() {
   const [maxPrice, setMaxPrice] = useState(5000)
   const [sort, setSort] = useState('popular')
   const [visible, setVisible] = useState(8)
+  useSeo({ title: 'Shop Mobile Accessories in Pakistan — UK Accessories | Earbuds, Smartwatches, Power Banks, Chargers', description: 'Shop mobile accessories in Pakistan at UK Accessories: wireless earbuds, smartwatches, power banks, fast chargers, charging cables, phone cases and screen protectors in PKR. Cash on Delivery in Pakistan.', path: '/shop' })
   const filtered = useMemo(() => {
     let list = [...products]
     if (cat !== 'all') list = list.filter(p => p.category === cat)
@@ -226,6 +229,7 @@ export function ProductPage() {
   const { slug } = useParams()
   const { addToCart, toggleWishlist, wishlist, products, categories } = useShop(); const nav = useNavigate()
   const p = products.find(x => x.slug === slug)
+  useSeo({ title: p ? `${p.name} Price in Pakistan — ${formatPKR(p.price)} | UK Accessories` : 'Product not found — UK Accessories', description: p ? `${p.name} in Pakistan for ${formatPKR(p.price)}. ${categoryNameFor(categories, p.category)} at UK Accessories. Cash on Delivery in Pakistan; confirm price on WhatsApp +92 3170851250 before ordering.` : 'This product does not exist at UK Accessories.', path: p ? `/product/${p.slug}` : undefined, ogType: 'product', ogImage: p ? `${SITE_URL}${p.image}` : undefined, noindex: !p, jsonLd: p ? productJsonLd({ name: p.name, slug: p.slug, image: p.image, description: p.description, categoryName: categoryNameFor(categories, p.category), price: p.price, stock: p.stock, sku: p.sku }) : undefined })
   const [qty, setQty] = useState(1); const [colour, setColour] = useState(p?.colours[0] || '')
   if (!p) return <div className="max-w-7xl mx-auto px-4 py-16 text-center"><h1 className="text-2xl font-bold">Product not found</h1><Link to="/shop" className="underline mt-3 inline-block">Back to shop</Link></div>
   const wished = wishlist.some(x => x.id === p.id)
@@ -289,6 +293,7 @@ export function ReviewForm({ productId }: { productId: string }) {
 
 export function CartPage() {
   const { cart, setQty, removeFromCart, applyCoupon, coupon, couponDiscount, shippingFor } = useShop(); const nav = useNavigate(); const [code, setCode] = useState(''); const [couponMsg, setCouponMsg] = useState<string | null>(null)
+  useSeo({ title: 'Shopping Cart — UK Accessories', description: 'Your UK Accessories shopping cart. Prices in PKR, Cash on Delivery in Pakistan.', path: '/cart', noindex: true })
   const subtotal = cart.reduce((s, i) => s + i.product.price * i.qty, 0)
   const discount = couponDiscount(subtotal)
   const shipping = shippingFor(subtotal - discount)
@@ -307,6 +312,7 @@ export function CheckoutPage() {
   const { cart, placeOrder, placeOrderLive, couponDiscount, shippingFor, user } = useShop()
   const [payment, setPayment] = useState('Cash on Delivery'); const [txnId, setTxnId] = useState(''); const [done, setDone] = useState<string | null>(null)
   const [screenshot, setScreenshot] = useState<File | null>(null); const [orderError, setOrderError] = useState<string | null>(null); const [placing, setPlacing] = useState(false)
+  useSeo({ title: 'Checkout — UK Accessories', description: 'Checkout at UK Accessories. Cash on Delivery in Pakistan or manual JazzCash/Easypaisa payment verified by the shop.', path: '/checkout', noindex: true })
   const subtotal = cart.reduce((s, i) => s + i.product.price * i.qty, 0)
   const discount = couponDiscount(subtotal); const shipping = shippingFor(subtotal - discount); const total = subtotal - discount + shipping
   const submit = async (e: FormEvent<HTMLFormElement>) => {
@@ -363,6 +369,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   const [info, setInfo] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [showReset, setShowReset] = useState(false)
+  useSeo({ title: mode === 'login' ? 'Customer Login — UK Accessories' : 'Customer Registration — UK Accessories', description: 'Sign in or register at UK Accessories Pakistan to track orders and manage your account.', path: mode === 'login' ? '/login' : '/register', noindex: true })
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault(); setError(null); setInfo(null); setBusy(true)
     try {
@@ -411,6 +418,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
 
 export function ProfilePage() {
   const { user, orders, logout, authLoading } = useShop(); const nav = useNavigate()
+  useSeo({ title: 'My Profile — UK Accessories', description: 'Your UK Accessories profile and orders.', path: '/profile', noindex: true })
   if (authLoading) return <div className="max-w-3xl mx-auto px-4 py-16 text-center"><div className={`${CARD} py-12 px-6`}><h1 className="text-2xl font-bold">Loading your profile…</h1><p className="text-neutral-500 text-sm mt-2">Checking your session.</p></div></div>
   if (!user) return <div className="max-w-3xl mx-auto px-4 py-16 text-center"><div className={`${CARD} py-12 px-6`}><h1 className="text-2xl font-bold">Please login first</h1><p className="text-neutral-500 text-sm mt-2">Sign in to see your profile and orders.</p><Link to="/login" className={`${BTN_BLACK} inline-block px-7 py-3 text-sm mt-5`}>Go to login</Link></div></div>
   return <div className="max-w-4xl mx-auto px-4 py-8 sm:py-10">
@@ -421,6 +429,7 @@ export function ProfilePage() {
 
 export function WishlistPage() {
   const { wishlist } = useShop()
+  useSeo({ title: 'Wishlist — UK Accessories', description: 'Your saved UK Accessories products.', path: '/wishlist', noindex: true })
   return <div className="max-w-7xl mx-auto px-4 py-8 sm:py-10"><h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Wishlist</h1><p className="text-neutral-600 mt-2">{wishlist.length === 0 ? 'Save products you like and find them here.' : `${wishlist.length} saved item${wishlist.length === 1 ? '' : 's'}.`}</p>{wishlist.length === 0 ? <div className={`${CARD} py-14 px-6 text-center mt-6`}><Heart size={40} className="mx-auto text-neutral-400" /><p className="text-neutral-500 mt-3">Your wishlist is empty.</p><Link to="/shop" className={`${BTN_BLACK} inline-block px-7 py-3 text-sm mt-5`}>Shop Now</Link></div> : <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mt-6">{wishlist.map(p => <ProductCard key={p.id} p={p} />)}</div>}</div>
 }
 
@@ -428,6 +437,7 @@ const TRACK_STEPS = ['Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered
 
 export function TrackPage() {
   const { orders } = useShop(); const [id, setId] = useState(''); const [found, setFound] = useState<typeof orders[0] | null>(null); const [searched, setSearched] = useState(false)
+  useSeo({ title: 'Order Tracking — UK Accessories', description: 'Track your UK Accessories order by order ID.', path: '/track', noindex: true })
   const stepIndex = found ? TRACK_STEPS.indexOf(found.status) : -1
   return <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12"><h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Order Tracking</h1><p className="text-neutral-600 mt-2">Enter your order ID to check its status.</p>
     <div className={CARD}><form className="flex flex-col sm:flex-row gap-2 p-4 sm:p-5" onSubmit={e => { e.preventDefault(); setSearched(true); setFound(orders.find(o => o.id === id.trim()) || null) }}><label htmlFor="track-id" className="sr-only">Order ID</label><input id="track-id" value={id} onChange={e => setId(e.target.value)} placeholder="Order ID, e.g. UK-123456" className={`${INPUT} flex-1`} /><button className={`${BTN_BLACK} px-7 py-3 text-sm shrink-0`}>Track</button></form></div>
@@ -441,13 +451,15 @@ export function TrackPage() {
 }
 
 export function StaticPage({ title, body }: { title: string; body: string }) {
+  const isFaq = title === 'FAQ'
+  useSeo({ title: `${title} — UK Accessories Pakistan`, description: `${title} at UK Accessories Pakistan. ${body.split('\n')[0].slice(0, 140)}`, jsonLd: isFaq ? FAQ_JSON_LD : undefined })
   return <div className="max-w-3xl mx-auto px-4 py-10 sm:py-12"><h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">{title}</h1><div className={`${CARD} p-6 sm:p-8 mt-6 whitespace-pre-line text-neutral-700 leading-relaxed`}>{body}</div></div>
 }
 
 export const STATIC: Record<string, { title: string; body: string }> = {
-  about: { title: 'About Us', body: 'UK Accessories is a premium mobile accessories and tech gadgets store. Slogan: Upgrade Your Tech. Elevate Your Style.\n\nPrimary market: Pakistan. Secondary: international customers (international delivery is not advertised as available until courier arrangements and rates are confirmed).\n\nSupport: WhatsApp +92 3170851250. Currency: PKR.\n\nThis site is in demo mode with sample products until the owner approves real products, prices and photos.' },
+  about: { title: 'About Us', body: 'UK Accessories is an online mobile accessories and tech gadgets store serving customers in Pakistan. It sells wireless earbuds, headphones, fast chargers, charging cables, power banks, smartwatches, phone cases and screen protectors, with prices in PKR. Orders in Pakistan can be paid by Cash on Delivery, or by manual JazzCash/Easypaisa payment verified by the shop over WhatsApp (+92 3170851250). International delivery is not advertised as available yet.\n\nSlogan: Upgrade Your Tech. Elevate Your Style.\n\nPrimary market: Pakistan. Secondary: international customers (international delivery is not advertised as available until courier arrangements and rates are confirmed).\n\nSupport: WhatsApp +92 3170851250. Currency: PKR.\n\nPrices shown are sample prices — confirm the price on WhatsApp before ordering if unsure (see FAQ). Product images are representative images, not exact photos of every model.' },
   contact: { title: 'Contact Us', body: 'WhatsApp: +92 3170851250\nMessage: Hello UK Accessories! I need assistance with your products and orders.\n\nUse the floating WhatsApp button on every page. No business email or shop address is published here because none has been confirmed for UK Accessories in this brief. Social media links are placeholders until the owner provides them.' },
-  faq: { title: 'FAQ', body: 'Q: Do you offer Cash on Delivery?\nA: Yes, in Pakistan (demo checkout supports it).\n\nQ: Can I pay with JazzCash or Easypaisa?\nA: Yes, manually. Place the order, share your transaction ID, and the shop verifies it. No automatic payment integration is claimed, and no payment account details are published on this site.\n\nQ: Are prices final?\nA: No — current prices are demo samples. Confirm the price on WhatsApp before ordering if unsure.\n\nQ: Do you deliver internationally?\nA: Not advertised as available yet, until courier rates are confirmed.' },
+  faq: { title: 'FAQ', body: 'Q: Do you offer Cash on Delivery?\nA: Yes, in Pakistan (demo checkout supports it).\n\nQ: Can I pay with JazzCash or Easypaisa?\nA: Yes, manually. Place the order, share your transaction ID, and the shop verifies it. No automatic payment integration is claimed, and no payment account details are published on this site.\n\nQ: Are prices final?\nA: No — current prices are demo samples. Confirm the price on WhatsApp before ordering if unsure.\n\nQ: Do you deliver internationally?\nA: Not advertised as available yet, until courier rates are confirmed.\n\nQ: What is UK Accessories?\nA: UK Accessories is an online mobile accessories and tech gadgets store serving customers in Pakistan. Its slogan is Upgrade Your Tech. Elevate Your Style.\n\nQ: What products does UK Accessories sell?\nA: Wireless earbuds, headphones, fast chargers, charging cables, power banks, smartwatches, phone cases and screen protectors, priced in PKR. See /shop for the current product list and prices.\n\nQ: How do I order on WhatsApp?\nA: Message UK Accessories on WhatsApp at +92 3170851250 with: Hello UK Accessories! I need assistance with your products and orders.\n\nQ: What is the shipping policy?\nA: Shipping is available in Pakistan. Demo shipping is Rs. 250, free over Rs. 5,000 (a demo rule, admin-configurable in the live store). Delivery estimates, zones and rates must be confirmed by the owner before they are promised.\n\nQ: What if my item arrives damaged or incorrect?\nA: Contact UK Accessories on WhatsApp (+92 3170851250) with your order ID and photos. Manual-payment refunds are handled by the shop after verification.' },
   privacy: { title: 'Privacy Policy', body: 'We collect only the information needed to process orders: name, phone, email, address and order details. In demo mode this stays in your browser. In live mode it is stored in Supabase with Row Level Security — customers can only access their own data. We do not sell personal data. Contact us on WhatsApp +92 3170851250 for privacy requests.' },
   terms: { title: 'Terms and Conditions', body: 'By using UK Accessories you agree to these terms. Products shown are demo samples until approved. Prices are in PKR. Orders are subject to confirmation and stock availability. Manual payments are subject to verification. Nothing here promises international delivery until confirmed.' },
   shipping: { title: 'Shipping Policy', body: 'Shipping is available in Pakistan. Demo shipping: Rs. 250, free over Rs. 5,000 (demo rule — admin-configurable in live mode).\n\nDelivery estimates, zones and rates are admin-configurable in the live store and must be confirmed by the owner before they are promised to customers. International shipping is not advertised as available yet.' },
