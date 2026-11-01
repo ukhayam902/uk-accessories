@@ -1,0 +1,103 @@
+# UK Accessories — Full details
+
+> UK Accessories is an online mobile accessories and tech gadgets store serving customers in Pakistan. Slogan: "Upgrade Your Tech. Elevate Your Style." Website: https://uk-accessories.vercel.app/
+
+## About
+
+UK Accessories is an online mobile accessories and tech gadgets store serving customers in Pakistan. It sells wireless earbuds, headphones, fast chargers, charging cables, power banks, smartwatches, phone cases and screen protectors, with prices in PKR. Orders in Pakistan can be paid by Cash on Delivery, or by manual JazzCash/Easypaisa payment verified by the shop over WhatsApp (+92 3170851250). International delivery is not advertised as available yet.
+
+Primary market: Pakistan. Secondary: international customers (international delivery is not advertised as available until courier arrangements and rates are confirmed).
+
+Support: WhatsApp +92 3170851250. Currency: PKR.
+
+Prices shown are sample prices — confirm the price on WhatsApp before ordering if unsure (see FAQ). Product images are representative images, not exact photos of every model.
+
+Physical shop context (separate from the online store): the owner's physical mobile shop is Umar Khayam Mobile Zone, KPK, Swabi, Shwa Adda, Abdus Sattar Plaza, Shop No. 16. UK Accessories is the online accessories store. No opening hours, geo coordinates, business email or social media links are published for UK Accessories, because none have been confirmed.
+
+## Products (8 live products, PKR, sample prices)
+
+### Premium Wireless Earbuds — Rs. 2,499
+- https://uk-accessories.vercel.app/product/premium-wireless-earbuds
+- Category: Wireless Earbuds. SKU: UK-EB-001. Colours: Black, White.
+- Compact true wireless earbuds with a charging case, clear calls and everyday battery life. Specifications are sample specifications — confirm with the owner before treating them as a product guarantee.
+
+### Magnetic Fast Wireless Charger — Rs. 2,199
+- https://uk-accessories.vercel.app/product/magnetic-fast-wireless-charger
+- Category: Fast Chargers. SKU: UK-CH-002. Colours: Black, White.
+- Magnetic wireless charging pad for compatible phones. Place, snap and charge.
+
+### 20,000mAh Power Bank — Rs. 3,999
+- https://uk-accessories.vercel.app/product/20000mah-power-bank
+- Category: Power Banks. SKU: UK-PB-003. Colour: Black.
+- High-capacity portable power for phones, earbuds and watches — sized for travel days in Pakistan.
+
+### Premium Silicone Phone Case — Rs. 899
+- https://uk-accessories.vercel.app/product/premium-silicone-phone-case
+- Category: Phone Cases and Covers. SKU: UK-CS-004. Colours: Black, White, Silver.
+- Soft-touch silicone case with raised edges for screen and camera protection.
+
+### USB-C Fast Charging Cable — Rs. 499
+- https://uk-accessories.vercel.app/product/usb-c-fast-charging-cable
+- Category: Charging Cables. SKU: UK-CB-005. Colours: Black, White.
+- Everyday USB-C cable for charging and data, built for daily use.
+
+### Smart Fitness Watch — Rs. 4,499
+- https://uk-accessories.vercel.app/product/smart-fitness-watch
+- Category: Smartwatches. SKU: UK-SW-006. Colours: Black, Silver.
+- Fitness watch with step, heart-rate and notification features for everyday life.
+
+### Wireless Bluetooth Headphones — Rs. 3,499
+- https://uk-accessories.vercel.app/product/wireless-bluetooth-headphones
+- Category: Headphones. SKU: UK-HP-007. Colour: Black.
+- Comfortable over-ear Bluetooth headphones for work, study and travel.
+
+### Tempered Glass Screen Protector — Rs. 399
+- https://uk-accessories.vercel.app/product/tempered-glass-screen-protector
+- Category: Screen Protectors. SKU: UK-SP-008. Colour: Clear.
+- Tempered glass protector to guard against scratches and everyday drops. Model compatibility must be confirmed at order time.
+
+## Payments and delivery
+
+- Cash on Delivery: available in Pakistan.
+- JazzCash / Easypaisa: manual payment only. Place the order, share your transaction ID, and the shop verifies it. No automatic payment integration is claimed, and no payment account details are published on this site.
+- Shipping: available in Pakistan. Demo shipping is Rs. 250, free over Rs. 5,000 (a demo rule, admin-configurable in the live store). Delivery estimates, zones and rates must be confirmed by the owner before they are promised.
+- International shipping: not advertised as available yet.
+- Returns: if an item arrives damaged or incorrect, contact UK Accessories on WhatsApp (+92 3170851250) with your order ID and photos. Eligible cancellations/refunds restore stock in the admin system. Manual-payment refunds are handled by the shop after verification. Final return windows and conditions are set by the owner in the live store settings.
+
+## Questions and answers (direct answers first)
+
+- What is UK Accessories? UK Accessories is an online mobile accessories and tech gadgets store serving customers in Pakistan.
+- What products does UK Accessories sell? Wireless earbuds, headphones, fast chargers, charging cables, power banks, smartwatches, phone cases and screen protectors, priced in PKR.
+- Do you offer Cash on Delivery? Yes, in Pakistan.
+- Can I pay with JazzCash or Easypaisa? Yes, manually. Place the order, share your transaction ID, and the shop verifies it.
+- Are prices final? No — current prices are sample prices. Confirm the price on WhatsApp before ordering if unsure.
+- Do you deliver internationally? Not advertised as available yet, until courier rates are confirmed.
+- How do I order on WhatsApp? Message +92 3170851250 with: "Hello UK Accessories! I need assistance with your products and orders."
+- What is the shipping policy? Shipping is available in Pakistan. Demo shipping is Rs. 250, free over Rs. 5,000 (a demo rule, admin-configurable in the live store).
+- What if my item arrives damaged or incorrect? Contact UK Accessories on WhatsApp (+92 3170851250) with your order ID and photos.
+
+## Privacy and terms (summaries; full pages on site)
+
+- Privacy: the store collects only the information needed to process orders (name, phone, email, address and order details). In live mode it is stored in Supabase with Row Level Security — customers can only access their own data. Personal data is not sold. Privacy requests: WhatsApp +92 3170851250.
+- Terms: products shown are sample products until approved. Prices are in PKR. Orders are subject to confirmation and stock availability. Manual payments are subject to verification. Nothing here promises international delivery until confirmed.
+
+## Pages
+
+- Home: https://uk-accessories.vercel.app/
+- Shop: https://uk-accessories.vercel.app/shop
+- About: https://uk-accessories.vercel.app/about
+- Contact: https://uk-accessories.vercel.app/contact
+- FAQ: https://uk-accessories.vercel.app/faq
+- Shipping Policy: https://uk-accessories.vercel.app/shipping
+- Return and Refund Policy: https://uk-accessories.vercel.app/returns
+- Privacy Policy: https://uk-accessories.vercel.app/privacy
+- Terms and Conditions: https://uk-accessories.vercel.app/terms
+- Sitemap: https://uk-accessories.vercel.app/sitemap.xml
+- Short AI summary: https://uk-accessories.vercel.app/llms.txt
+
+## Notes on what is NOT claimed
+
+- No customer reviews, ratings, or testimonials are published, because none have been confirmed. The testimonials section on the site is intentionally empty.
+- No Google Business Profile is claimed to exist.
+- No search volumes, traffic figures, or ranking guarantees are claimed anywhere in this file. Keywords in docs/seo-keywords.md are targets, not results.
+- llms.txt / llms-full.txt are provided for AI search and answer engines. They do not by themselves affect Google Search ranking.

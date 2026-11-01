@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>/</loc></url>
-  <url><loc>/shop</loc></url>
-  <url><loc>/about</loc></url>
-  <url><loc>/contact</loc></url>
-  <url><loc>/faq</loc></url>
+  <url><loc>https://uk-accessories.vercel.app/</loc></url>
+  <url><loc>https://uk-accessories.vercel.app/shop</loc></url>
+  <url><loc>https://uk-accessories.vercel.app/product/premium-wireless-earbuds</loc></url>
+  <url><loc>https://uk-accessories.vercel.app/product/magnetic-fast-wireless-charger</loc></url>
+  <url><loc>https://uk-accessories.vercel.app/product/20000mah-power-bank</loc></url>
+  <url><loc>https://uk-accessories.vercel.app/product/premium-silicone-phone-case</loc></url>
+  <url><loc>https://uk-accessories.vercel.app/product/usb-c-fast-charging-cable</loc></url>
+  <url><loc>https://uk-accessories.vercel.app/product/smart-fitness-watch</loc></url>
+  <url><loc>https://uk-accessories.vercel.app/product/wireless-bluetooth-headphones</loc></url>
+  <url><loc>https://uk-accessories.vercel.app/product/tempered-glass-screen-protector</loc></url>
+  <url><loc>https://uk-accessories.vercel.app/about</loc></url>
+  <url><loc>https://uk-accessories.vercel.app/contact</loc></url>
+  <url><loc>https://uk-accessories.vercel.app/faq</loc></url>
+  <url><loc>https://uk-accessories.vercel.app/shipping</loc></url>
+  <url><loc>https://uk-accessories.vercel.app/returns</loc></url>
+  <url><loc>https://uk-accessories.vercel.app/privacy</loc></url>
+  <url><loc>https://uk-accessories.vercel.app/terms</loc></url>
 </urlset>

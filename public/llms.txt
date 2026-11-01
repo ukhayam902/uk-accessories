@@ -1,0 +1,56 @@
+# UK Accessories
+
+> UK Accessories is an online mobile accessories and tech gadgets store serving customers in Pakistan. Slogan: "Upgrade Your Tech. Elevate Your Style." Prices are in PKR. Orders in Pakistan can be paid by Cash on Delivery, or by manual JazzCash/Easypaisa payment verified by the shop over WhatsApp. International delivery is not advertised as available yet.
+
+## Key facts
+
+- Website: https://uk-accessories.vercel.app/
+- Brand: UK Accessories
+- Market: Pakistan (primary); international customers are a secondary market, but international delivery is not advertised as available yet, until courier rates are confirmed.
+- Currency: PKR (Pakistani Rupee)
+- WhatsApp support: +92 3170851250 — default message: "Hello UK Accessories! I need assistance with your products and orders."
+- Payment: Cash on Delivery in Pakistan; manual JazzCash/Easypaisa payment (share the transaction ID, the shop verifies it). No automatic payment integration is claimed, and no payment account numbers are published on this site.
+- Prices shown are sample prices — confirm the price on WhatsApp before ordering if unsure.
+- Product images are representative images, not exact photos of every model.
+- No business email, social media links, opening hours, or customer reviews are published for UK Accessories, because none have been confirmed. No reviews have been invented.
+- Physical shop context (separate from the online store): the owner's physical mobile shop is Umar Khayam Mobile Zone, KPK, Swabi, Shwa Adda, Abdus Sattar Plaza, Shop No. 16. UK Accessories is the online accessories store.
+
+## Products (8 live products, PKR)
+
+- Premium Wireless Earbuds — Rs. 2,499 — https://uk-accessories.vercel.app/product/premium-wireless-earbuds
+- Magnetic Fast Wireless Charger — Rs. 2,199 — https://uk-accessories.vercel.app/product/magnetic-fast-wireless-charger
+- 20,000mAh Power Bank — Rs. 3,999 — https://uk-accessories.vercel.app/product/20000mah-power-bank
+- Premium Silicone Phone Case — Rs. 899 — https://uk-accessories.vercel.app/product/premium-silicone-phone-case
+- USB-C Fast Charging Cable — Rs. 499 — https://uk-accessories.vercel.app/product/usb-c-fast-charging-cable
+- Smart Fitness Watch — Rs. 4,499 — https://uk-accessories.vercel.app/product/smart-fitness-watch
+- Wireless Bluetooth Headphones — Rs. 3,499 — https://uk-accessories.vercel.app/product/wireless-bluetooth-headphones
+- Tempered Glass Screen Protector — Rs. 399 — https://uk-accessories.vercel.app/product/tempered-glass-screen-protector
+
+## Questions and answers
+
+- What is UK Accessories? UK Accessories is an online mobile accessories and tech gadgets store serving customers in Pakistan.
+- What products does UK Accessories sell? Wireless earbuds, headphones, fast chargers, charging cables, power banks, smartwatches, phone cases and screen protectors, priced in PKR.
+- Do you offer Cash on Delivery? Yes, in Pakistan.
+- Can I pay with JazzCash or Easypaisa? Yes, manually. Place the order, share your transaction ID, and the shop verifies it.
+- Are prices final? No — current prices are sample prices. Confirm the price on WhatsApp before ordering if unsure.
+- Do you deliver internationally? Not advertised as available yet, until courier rates are confirmed.
+- How do I order on WhatsApp? Message +92 3170851250 with: "Hello UK Accessories! I need assistance with your products and orders."
+- What is the shipping policy? Shipping is available in Pakistan. Demo shipping is Rs. 250, free over Rs. 5,000 (a demo rule, admin-configurable in the live store). Delivery estimates, zones and rates must be confirmed by the owner before they are promised.
+- What if my item arrives damaged or incorrect? Contact UK Accessories on WhatsApp (+92 3170851250) with your order ID and photos. Manual-payment refunds are handled by the shop after verification.
+
+## Pages
+
+- Shop: https://uk-accessories.vercel.app/shop
+- About: https://uk-accessories.vercel.app/about
+- Contact: https://uk-accessories.vercel.app/contact
+- FAQ: https://uk-accessories.vercel.app/faq
+- Shipping Policy: https://uk-accessories.vercel.app/shipping
+- Return and Refund Policy: https://uk-accessories.vercel.app/returns
+- Privacy Policy: https://uk-accessories.vercel.app/privacy
+- Terms and Conditions: https://uk-accessories.vercel.app/terms
+- Full details: https://uk-accessories.vercel.app/llms-full.txt
+- Sitemap: https://uk-accessories.vercel.app/sitemap.xml
+
+## Optional
+
+- Note: llms.txt is provided for AI search and answer engines. It does not affect Google Search ranking on its own; Google ranking comes from the site's content, crawlability and relevance.

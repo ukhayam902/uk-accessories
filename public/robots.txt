@@ -1,2 +1,37 @@
+# UK Accessories — robots.txt
+# All crawlers, including AI search crawlers, are allowed to crawl public pages.
+# Private pages (login, profile, cart, checkout, wishlist, tracking, admin) are
+# marked noindex in the app itself, not blocked here, so agents can still reach
+# public content without a robots.txt block.
 User-agent: *
 Allow: /
+
+# AI search crawlers — explicitly allowed for GEO (search citability).
+# Note the distinction from training-only crawlers: OAI-SearchBot governs
+# ChatGPT Search citability and Claude-SearchBot governs Claude search
+# citability; GPTBot/ClaudeBot alone do not. All are allowed here.
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://uk-accessories.vercel.app/sitemap.xml
