@@ -6,7 +6,7 @@ import { whatsappLink } from '../data/catalog'
 import { demoMode } from '../lib/supabase'
 
 export function Logo() {
-  return <Link to="/" className="flex items-center gap-2.5 shrink-0" aria-label="UK Accessories home"><img src="/images/logo.svg" alt="UK Accessories logo" className="h-10 w-auto rounded-lg" /><span className="leading-none"><span className="block font-extrabold tracking-[0.18em] text-[15px] sm:text-base">UK ACCESSORIES</span><span className="block text-[10px] tracking-[0.22em] text-neutral-500 mt-1">UPGRADE YOUR TECH</span></span></Link>
+  return <Link to="/" className="flex items-center gap-2.5 shrink-0" aria-label="UK Accessories home"><img src="/images/logo.svg" alt="UK Accessories logo" className="h-9 sm:h-10 w-auto rounded-lg" /><span className="leading-none hidden sm:block"><span className="block font-extrabold tracking-[0.18em] text-[15px] sm:text-base">UK ACCESSORIES</span><span className="block text-[10px] tracking-[0.22em] text-neutral-500 mt-1">UPGRADE YOUR TECH</span></span></Link>
 }
 
 const ICON_BTN = 'relative inline-flex items-center justify-center w-11 h-11 rounded-full hover:bg-[#F7F7F7] transition-colors shrink-0'
@@ -26,7 +26,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <div className="bg-[#080808] text-white text-center text-xs sm:text-sm py-2.5 px-4 leading-relaxed">UK Accessories — Upgrade Your Tech. Elevate Your Style. <span className="text-neutral-300">• Cash on Delivery available in Pakistan</span></div>
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="py-3 flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="py-2.5 sm:py-3 flex items-center gap-1.5 sm:gap-3 min-w-0">
             <button className="lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-full hover:bg-[#F7F7F7] shrink-0" aria-label="Open menu" onClick={() => setOpen(true)}><Menu size={22} /></button>
             <Logo />
             <nav className="hidden lg:flex gap-5 ml-6 text-sm font-medium shrink-0" aria-label="Main navigation">

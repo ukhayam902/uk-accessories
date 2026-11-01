@@ -31,19 +31,19 @@ export function ProductCard({ p }: { p: Product }) {
   return (
     <motion.article whileHover={{ y: -4 }} transition={{ duration: 0.2 }} className="border border-neutral-200 rounded-3xl overflow-hidden bg-white flex flex-col shadow-sm hover:shadow-md transition-shadow">
       <div className="relative bg-[#F7F7F7]">
-        <Link to={`/product/${p.slug}`} aria-label={p.name}><img src={p.image} alt={`${p.name} — representative image`} loading="lazy" className="w-full aspect-square object-contain p-6 transition-transform duration-300 hover:scale-105" /></Link>
-        <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">{p.featured && <span className="text-[11px] font-semibold bg-black text-white px-2.5 py-1 rounded-full">Featured</span>}{p.bestseller && <span className="text-[11px] font-semibold bg-white border border-neutral-200 px-2.5 py-1 rounded-full">Bestseller</span>}{p.isNew && <span className="text-[11px] font-semibold bg-white border border-neutral-200 px-2.5 py-1 rounded-full">New</span>}</div>
-        <button aria-label={wished ? 'Remove from wishlist' : 'Add to wishlist'} onClick={() => toggleWishlist(p)} className={`absolute top-3 right-3 w-10 h-10 rounded-full bg-white border border-neutral-200 shadow-sm flex items-center justify-center ${wished ? 'text-red-600' : 'text-neutral-700'}`}><Heart fill={wished ? 'currentColor' : 'none'} size={18} /></button>
+        <Link to={`/product/${p.slug}`} aria-label={p.name}><img src={p.image} alt={`${p.name} — representative image`} loading="lazy" className="w-full aspect-square object-contain p-3 sm:p-6 transition-transform duration-300 hover:scale-105" /></Link>
+        <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex gap-1.5 flex-wrap">{p.featured && <span className="text-[11px] font-semibold bg-black text-white px-2.5 py-1 rounded-full">Featured</span>}{p.bestseller && <span className="text-[11px] font-semibold bg-white border border-neutral-200 px-2.5 py-1 rounded-full">Bestseller</span>}{p.isNew && <span className="text-[11px] font-semibold bg-white border border-neutral-200 px-2.5 py-1 rounded-full">New</span>}</div>
+        <button aria-label={wished ? 'Remove from wishlist' : 'Add to wishlist'} onClick={() => toggleWishlist(p)} className={`absolute top-2 right-2 sm:top-3 sm:right-3 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border border-neutral-200 shadow-sm flex items-center justify-center ${wished ? 'text-red-600' : 'text-neutral-700'}`}><Heart fill={wished ? 'currentColor' : 'none'} size={18} /></button>
       </div>
-      <div className="p-5 flex flex-col gap-2.5 flex-1">
+      <div className="p-3 sm:p-5 flex flex-col gap-1.5 sm:gap-2.5 flex-1">
         <p className="text-[11px] font-semibold tracking-[0.14em] text-neutral-500 uppercase">{categoryNameFor(categories, p.category)}</p>
-        <Link to={`/product/${p.slug}`} className="font-semibold text-[17px] leading-snug hover:underline">{p.name}</Link>
-        <p className="text-sm text-neutral-600 line-clamp-2 leading-relaxed">{p.description}</p>
+        <Link to={`/product/${p.slug}`} className="font-semibold text-sm sm:text-[17px] leading-snug hover:underline line-clamp-2">{p.name}</Link>
+        <p className="text-xs sm:text-sm text-neutral-600 line-clamp-2 leading-relaxed">{p.description}</p>
         {p.isDemo && <span className="text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full w-fit">Demo price — to be confirmed</span>}
-        <div className="mt-auto pt-2 flex items-end justify-between gap-2"><span className="flex items-baseline gap-2"><span className="font-extrabold text-xl">{formatPKR(p.price)}</span>{p.compareAt && <span className="text-sm text-neutral-400 line-through">{formatPKR(p.compareAt)}</span>}</span><span className={`text-xs font-medium ${stockCls}`}>{stockLabel}</span></div>
+        <div className="mt-auto pt-1 sm:pt-2 flex flex-wrap items-end justify-between gap-x-2 gap-y-1"><span className="flex items-baseline gap-2"><span className="font-extrabold text-base sm:text-xl">{formatPKR(p.price)}</span>{p.compareAt && <span className="text-sm text-neutral-400 line-through">{formatPKR(p.compareAt)}</span>}</span><span className={`text-xs font-medium ${stockCls}`}>{stockLabel}</span></div>
         <div className="flex flex-col gap-2 mt-1">
-          <button onClick={() => addToCart(p)} disabled={p.stock <= 0} className={`${BTN_BLACK} w-full py-3 text-sm disabled:opacity-40`}>{p.stock <= 0 ? 'Out of stock' : 'Add to Cart'}</button>
-          <button onClick={() => { addToCart(p); nav('/checkout') }} disabled={p.stock <= 0} className={`${BTN_OUTLINE} w-full py-3 text-sm disabled:opacity-40`}>Buy Now</button>
+          <button onClick={() => addToCart(p)} disabled={p.stock <= 0} className={`${BTN_BLACK} w-full py-2.5 sm:py-3 text-xs sm:text-sm disabled:opacity-40`}>{p.stock <= 0 ? 'Out of stock' : 'Add to Cart'}</button>
+          <button onClick={() => { addToCart(p); nav('/checkout') }} disabled={p.stock <= 0} className={`${BTN_OUTLINE} w-full py-2.5 sm:py-3 text-xs sm:text-sm disabled:opacity-40`}>Buy Now</button>
         </div>
       </div>
     </motion.article>
@@ -110,7 +110,7 @@ function SectionHeader({ title, subtitle, actionTo, actionLabel }: { title: stri
 }
 function Section({ title, subtitle, items, actionTo }: { title: string; subtitle?: string; items: Product[]; actionTo?: string }) {
   if (!items.length) return null
-  return <Reveal><section className="max-w-7xl mx-auto px-4 py-10 sm:py-12"><SectionHeader title={title} subtitle={subtitle} actionTo={actionTo} actionLabel="View all" /><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">{items.map(p => <ProductCard key={p.id} p={p} />)}</div></section></Reveal>
+  return <Reveal><section className="max-w-7xl mx-auto px-3 sm:px-4 py-10 sm:py-12"><SectionHeader title={title} subtitle={subtitle} actionTo={actionTo} actionLabel="View all" /><div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">{items.map(p => <ProductCard key={p.id} p={p} />)}</div></section></Reveal>
 }
 
 export function Home() {
@@ -221,7 +221,7 @@ export function ShopPage() {
         </div>}
       </div>
       {filtered.length === 0 ? <div className={`${CARD} py-16 px-6 text-center mt-6`}><Package size={40} className="mx-auto text-neutral-400" /><h2 className="text-xl font-bold mt-4">No products match these filters</h2><p className="text-neutral-500 text-sm mt-1.5">Try a different search, category or price.</p><button onClick={resetFilters} className={`${BTN_BLACK} px-6 py-3 text-sm mt-5`}>Clear filters</button></div> : <>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 mt-6">{filtered.slice(0, visible).map(p => <ProductCard key={p.id} p={p} />)}</div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 mt-6">{filtered.slice(0, visible).map(p => <ProductCard key={p.id} p={p} />)}</div>
         {visible < filtered.length && <div className="text-center mt-10"><button onClick={() => setVisible(v => v + 8)} className={`${BTN_BLACK} px-8 py-3.5 text-sm`}>Load more</button></div>}
         <p className="text-center text-sm text-neutral-500 mt-4">Showing {Math.min(visible, filtered.length)} of {filtered.length} products</p>
       </>}
@@ -271,7 +271,7 @@ export function ProductPage() {
           </div>
         </div>
       </div>
-      {related.length > 0 && <section className="py-10 sm:py-12"><SectionHeader title="Related products" actionTo={`/shop?category=${p.category}`} /><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">{related.map(x => <ProductCard key={x.id} p={x} />)}</div></section>}
+      {related.length > 0 && <section className="py-10 sm:py-12"><SectionHeader title="Related products" actionTo={`/shop?category=${p.category}`} /><div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">{related.map(x => <ProductCard key={x.id} p={x} />)}</div></section>}
       <ReviewForm productId={p.id} />
     </div>
   )
@@ -434,7 +434,7 @@ export function ProfilePage() {
 export function WishlistPage() {
   const { wishlist } = useShop()
   useSeo({ title: 'Wishlist — UK Accessories', description: 'Your saved UK Accessories products.', path: '/wishlist', noindex: true })
-  return <div className="max-w-7xl mx-auto px-4 py-8 sm:py-10"><h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Wishlist</h1><p className="text-neutral-600 mt-2">{wishlist.length === 0 ? 'Save products you like and find them here.' : `${wishlist.length} saved item${wishlist.length === 1 ? '' : 's'}.`}</p>{wishlist.length === 0 ? <div className={`${CARD} py-14 px-6 text-center mt-6`}><Heart size={40} className="mx-auto text-neutral-400" /><p className="text-neutral-500 mt-3">Your wishlist is empty.</p><Link to="/shop" className={`${BTN_BLACK} inline-block px-7 py-3 text-sm mt-5`}>Shop Now</Link></div> : <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mt-6">{wishlist.map(p => <ProductCard key={p.id} p={p} />)}</div>}</div>
+  return <div className="max-w-7xl mx-auto px-4 py-8 sm:py-10"><h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Wishlist</h1><p className="text-neutral-600 mt-2">{wishlist.length === 0 ? 'Save products you like and find them here.' : `${wishlist.length} saved item${wishlist.length === 1 ? '' : 's'}.`}</p>{wishlist.length === 0 ? <div className={`${CARD} py-14 px-6 text-center mt-6`}><Heart size={40} className="mx-auto text-neutral-400" /><p className="text-neutral-500 mt-3">Your wishlist is empty.</p><Link to="/shop" className={`${BTN_BLACK} inline-block px-7 py-3 text-sm mt-5`}>Shop Now</Link></div> : <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 mt-6">{wishlist.map(p => <ProductCard key={p.id} p={p} />)}</div>}</div>
 }
 
 const TRACK_STEPS = ['Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered']
