@@ -24,6 +24,7 @@ export function StatusPill({ status }: { status: string }) {
 
 export function ProductCard({ p }: { p: Product }) {
   const { addToCart, toggleWishlist, wishlist, categories } = useShop()
+  const nav = useNavigate()
   const wished = wishlist.some(x => x.id === p.id)
   const stockLabel = p.stock <= 0 ? 'Out of stock' : p.stock < 20 ? `Only ${p.stock} left` : 'In stock'
   const stockCls = p.stock <= 0 ? 'text-red-600' : p.stock < 20 ? 'text-amber-700' : 'text-green-700'
@@ -40,7 +41,10 @@ export function ProductCard({ p }: { p: Product }) {
         <p className="text-sm text-neutral-600 line-clamp-2 leading-relaxed">{p.description}</p>
         {p.isDemo && <span className="text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full w-fit">Demo price — to be confirmed</span>}
         <div className="mt-auto pt-2 flex items-end justify-between gap-2"><span className="flex items-baseline gap-2"><span className="font-extrabold text-xl">{formatPKR(p.price)}</span>{p.compareAt && <span className="text-sm text-neutral-400 line-through">{formatPKR(p.compareAt)}</span>}</span><span className={`text-xs font-medium ${stockCls}`}>{stockLabel}</span></div>
-        <button onClick={() => addToCart(p)} disabled={p.stock <= 0} className={`${BTN_BLACK} w-full py-3 text-sm mt-1 disabled:opacity-40`}>{p.stock <= 0 ? 'Out of stock' : 'Add to Cart'}</button>
+        <div className="flex flex-col gap-2 mt-1">
+          <button onClick={() => addToCart(p)} disabled={p.stock <= 0} className={`${BTN_BLACK} w-full py-3 text-sm disabled:opacity-40`}>{p.stock <= 0 ? 'Out of stock' : 'Add to Cart'}</button>
+          <button onClick={() => { addToCart(p); nav('/checkout') }} disabled={p.stock <= 0} className={`${BTN_OUTLINE} w-full py-3 text-sm disabled:opacity-40`}>Buy Now</button>
+        </div>
       </div>
     </motion.article>
   )
