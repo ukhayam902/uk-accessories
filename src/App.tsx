@@ -17,6 +17,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
   }
 }
 import { Layout } from './components/layout'
+import ScrollToTop from './components/ScrollToTop'
 import { AuthPage, CartPage, CheckoutPage, Home, ProductPage, ProfilePage, ShopPage, STATIC, StaticPage, TrackPage, WishlistPage } from './pages/pages'
 import { AdminPage } from './pages/admin'
 
@@ -30,6 +31,7 @@ export default function App() {
   return (
     <ShopProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <ErrorBoundary>
         <Layout>
           <Routes>
