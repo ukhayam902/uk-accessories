@@ -237,7 +237,7 @@ export function ProductPage() {
   const [qty, setQty] = useState(1); const [colour, setColour] = useState(p?.colours[0] || '')
   if (!p) return <div className="max-w-7xl mx-auto px-4 py-16 text-center"><h1 className="text-2xl font-bold">Product not found</h1><Link to="/shop" className="underline mt-3 inline-block">Back to shop</Link></div>
   const wished = wishlist.some(x => x.id === p.id)
-  const related = products.filter(x => x.category === p.category && x.id !== p.id).slice(0, 4)
+  const related = [...products.filter(x => x.category === p.category && x.id !== p.id), ...products.filter(x => x.category !== p.category && x.id !== p.id)].slice(0, 4)
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 sm:py-10">
       <nav aria-label="Breadcrumb" className="text-sm text-neutral-500 mb-6 flex flex-wrap gap-1.5"><Link to="/" className="hover:underline">Home</Link><span>/</span><Link to="/shop" className="hover:underline">Shop</Link><span>/</span><Link to={`/shop?category=${p.category}`} className="hover:underline">{categoryNameFor(categories, p.category)}</Link><span>/</span><span className="text-neutral-900 font-medium">{p.name}</span></nav>
@@ -271,7 +271,7 @@ export function ProductPage() {
           </div>
         </div>
       </div>
-      {related.length > 0 && <section className="py-10 sm:py-12"><SectionHeader title="Related products" actionTo={`/shop?category=${p.category}`} /><div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">{related.map(x => <ProductCard key={x.id} p={x} />)}</div></section>}
+      {related.length > 0 && <section className="py-10 sm:py-12"><SectionHeader title="Related products" actionTo="/shop" /><div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">{related.map(x => <ProductCard key={x.id} p={x} />)}</div></section>}
       <ReviewForm productId={p.id} />
     </div>
   )
